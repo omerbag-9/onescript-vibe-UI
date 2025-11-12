@@ -55,11 +55,11 @@
 
   <div id="footer"></div>
 
-  <script>
-    fetch('../components/header.html').then(r => r.text()).then(html => document.getElementById('header').innerHTML = html);
-    fetch('../components/footer.html').then(r => r.text()).then(html => document.getElementById('footer').innerHTML = html);
-  </script>
   <script src="../js/app.js"></script>
+  <script>
+    // Set form redirect to payment page after identity verification
+    document.querySelector('form').setAttribute('data-redirect', 'payment.html');
+  </script>
 </body>
 </html>
 

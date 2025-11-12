@@ -6,7 +6,12 @@
     <a href="#" onclick="return false;" style="opacity: 0.5; cursor: not-allowed;">FAQ <span>▼</span></a>
     <a href="#" onclick="return false;" style="opacity: 0.5; cursor: not-allowed;">Contact</a>
     <a href="../patient/service-selection.html" class="btn-primary">Get Started →</a>
-    <div class="user-icon">👤</div>
+    <div class="dashboard-switcher">
+      <button class="dashboard-btn" onclick="window.location.href='../patient/dashboard.html'" title="Patient Dashboard">👤 Patient</button>
+      <button class="dashboard-btn" onclick="window.location.href='../doctor/doctor-dashboard.html'" title="Doctor Dashboard">👨‍⚕️ Doctor</button>
+      <button class="dashboard-btn" onclick="window.location.href='../pharmacist/pharmacist-dashboard.html'" title="Pharmacist Dashboard">💊 Pharmacist</button>
+      <button class="dashboard-btn" onclick="window.location.href='../admin/admin-dashboard.html'" title="Admin Dashboard">⚙️ Admin</button>
+    </div>
   </nav>
 </header>
 
