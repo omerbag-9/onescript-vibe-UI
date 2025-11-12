@@ -23,8 +23,8 @@
         <div class="value">15</div>
       </div>
       <div class="dashboard-card">
-        <h3>Active Services</h3>
-        <div class="value">1</div>
+        <h3>Active Diseases</h3>
+        <div class="value" id="diseasesCount">1</div>
       </div>
     </div>
 
@@ -45,11 +45,13 @@
 
   <div id="footer"></div>
 
-  <script>
-    fetch('../components/header.html').then(r => r.text()).then(html => document.getElementById('header').innerHTML = html);
-    fetch('../components/footer.html').then(r => r.text()).then(html => document.getElementById('footer').innerHTML = html);
-  </script>
   <script src="../js/app.js"></script>
+  <script>
+    // Update diseases count
+    const diseases = JSON.parse(localStorage.getItem('diseases') || '[]');
+    const count = diseases.length > 0 ? diseases.length : 1;
+    document.getElementById('diseasesCount').textContent = count;
+  </script>
 </body>
 </html>
 
