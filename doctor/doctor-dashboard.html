@@ -29,20 +29,12 @@
     </div>
 
     <div class="card" style="margin-top: 2rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-        <h2 style="margin: 0;">All Assessments</h2>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-          <label style="font-weight: 500; color: var(--text-dark);">Filter by Status:</label>
-          <select class="form-input" id="statusFilter" style="width: auto; min-width: 200px;" onchange="filterAssessments()">
-            <option value="all">All Statuses</option>
-            <option value="awaiting-review">Awaiting Doctor Review</option>
-            <option value="approved">Prescription Approved by Doctor</option>
-            <option value="rejected">Assessment Rejected by Doctor</option>
-          </select>
-        </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="margin: 0;">Assessments Awaiting Review</h2>
+        <a href="doctor-history.html" class="btn-secondary">View Full History</a>
       </div>
       
-      <table class="table" id="assessmentsTable">
+      <table class="table">
         <thead>
           <tr>
             <th>Patient Name</th>
@@ -53,8 +45,8 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="assessmentsBody">
-          <tr data-status="awaiting-review">
+        <tbody id="awaitingReviewBody">
+          <tr>
             <td>John Doe</td>
             <td>Erectile Dysfunction</td>
             <td>Product A</td>
@@ -62,7 +54,7 @@
             <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
             <td><a href="doctor-review.html" class="link">Review</a></td>
           </tr>
-          <tr data-status="awaiting-review">
+          <tr>
             <td>Jane Smith</td>
             <td>Erectile Dysfunction</td>
             <td>Product B</td>
@@ -70,7 +62,7 @@
             <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
             <td><a href="doctor-review.html" class="link">Review</a></td>
           </tr>
-          <tr data-status="awaiting-review">
+          <tr>
             <td>Mike Johnson</td>
             <td>Erectile Dysfunction</td>
             <td>Product A</td>
@@ -78,29 +70,21 @@
             <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
             <td><a href="doctor-review.html" class="link">Review</a></td>
           </tr>
-          <tr data-status="approved">
+          <tr>
             <td>Sarah Williams</td>
             <td>Erectile Dysfunction</td>
             <td>Product C</td>
             <td>Jan 13, 2025</td>
-            <td><span class="badge badge-approved">Prescription Approved by Doctor</span></td>
-            <td><a href="doctor-review.html" class="link">View</a></td>
+            <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
+            <td><a href="doctor-review.html" class="link">Review</a></td>
           </tr>
-          <tr data-status="approved">
+          <tr>
             <td>David Brown</td>
             <td>Erectile Dysfunction</td>
             <td>Product A</td>
             <td>Jan 12, 2025</td>
-            <td><span class="badge badge-approved">Prescription Approved by Doctor</span></td>
-            <td><a href="doctor-review.html" class="link">View</a></td>
-          </tr>
-          <tr data-status="rejected">
-            <td>Emily Davis</td>
-            <td>Erectile Dysfunction</td>
-            <td>Product B</td>
-            <td>Jan 11, 2025</td>
-            <td><span class="badge badge-rejected">Assessment Rejected by Doctor</span></td>
-            <td><a href="doctor-review.html" class="link">View</a></td>
+            <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
+            <td><a href="doctor-review.html" class="link">Review</a></td>
           </tr>
         </tbody>
       </table>
@@ -111,42 +95,11 @@
 
   <script src="../js/app.js"></script>
   <script>
-    // Filter assessments by status
-    function filterAssessments() {
-      const filter = document.getElementById('statusFilter').value;
-      const rows = document.querySelectorAll('#assessmentsBody tr');
-      let visibleCount = 0;
-
-      rows.forEach(row => {
-        if (filter === 'all' || row.getAttribute('data-status') === filter) {
-          row.style.display = '';
-          visibleCount++;
-        } else {
-          row.style.display = 'none';
-        }
-      });
-
-      // Update counts
-      updateCounts();
-    }
-
     // Update dashboard counts
     function updateCounts() {
-      const rows = document.querySelectorAll('#assessmentsBody tr');
-      let pending = 0, approved = 0, rejected = 0;
-
-      rows.forEach(row => {
-        if (row.style.display !== 'none') {
-          const status = row.getAttribute('data-status');
-          if (status === 'awaiting-review') pending++;
-          else if (status === 'approved') approved++;
-          else if (status === 'rejected') rejected++;
-        }
-      });
-
+      const rows = document.querySelectorAll('#awaitingReviewBody tr');
+      const pending = rows.length;
       document.getElementById('pendingCount').textContent = pending;
-      document.getElementById('approvedCount').textContent = approved;
-      document.getElementById('rejectedCount').textContent = rejected;
     }
 
     // Initialize

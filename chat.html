@@ -5,6 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat - OneScript</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .message {
+      margin-bottom: 1rem;
+      display: flex;
+    }
+
+    .message-sent {
+      justify-content: flex-start;
+    }
+
+    .message-received {
+      justify-content: flex-end;
+    }
+
+    .message-content {
+      max-width: 70%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .message-sent .message-content {
+      background-color: var(--primary-teal);
+      color: white;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-received .message-content {
+      background-color: var(--bg-white);
+      color: var(--text-dark);
+      border: 1px solid var(--border-light);
+      border-bottom-right-radius: 4px;
+    }
+
+    .message-time {
+      display: block;
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-top: 0.5rem;
+    }
+
+    .message-sent .message-time {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .message-received .message-time {
+      color: var(--text-light);
+    }
+  </style>
 </head>
 <body>
   <div id="header"></div>
@@ -31,13 +80,13 @@
         <div id="messagesArea" style="flex: 1; overflow-y: auto; padding: 1rem; background-color: var(--bg-light); border-radius: 4px; margin-bottom: 1rem;">
           <div class="message message-received">
             <div class="message-content">
-              <p>Hello, I have a question about my assessment.</p>
+              <p style="margin: 0;">Hello, I have a question about my assessment.</p>
               <span class="message-time">2:30 PM</span>
             </div>
           </div>
           <div class="message message-sent">
             <div class="message-content">
-              <p>Hello! I'm here to help. What would you like to know?</p>
+              <p style="margin: 0;">Hello! I'm here to help. What would you like to know?</p>
               <span class="message-time">2:31 PM</span>
             </div>
           </div>
@@ -86,10 +135,10 @@
 
       const messagesArea = document.getElementById('messagesArea');
       const messageDiv = document.createElement('div');
-      messageDiv.className = 'message message-sent';
+      messageDiv.className = 'message message-sent'; // My messages on the left
       messageDiv.innerHTML = `
         <div class="message-content">
-          <p>${message}</p>
+          <p style="margin: 0;">${message}</p>
           <span class="message-time">${getCurrentTime()}</span>
         </div>
       `;
@@ -97,6 +146,22 @@
       messagesArea.appendChild(messageDiv);
       messagesArea.scrollTop = messagesArea.scrollHeight;
       input.value = '';
+    }
+
+    // Simulate receiving a message (for demo)
+    function simulateReceivedMessage() {
+      const messagesArea = document.getElementById('messagesArea');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message message-received'; // Messages to me on the right
+      messageDiv.innerHTML = `
+        <div class="message-content">
+          <p style="margin: 0;">Thank you for your message. I'll get back to you soon.</p>
+          <span class="message-time">${getCurrentTime()}</span>
+        </div>
+      `;
+      
+      messagesArea.appendChild(messageDiv);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
     }
 
     // End chat (doctor only)
@@ -139,4 +204,3 @@
   </script>
 </body>
 </html>
-

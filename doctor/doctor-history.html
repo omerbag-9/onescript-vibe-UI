@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment History - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="doctor-dashboard.html" class="back-link">← Back to Dashboard</a>
+    
+    <h1 class="page-title">Assessment History</h1>
+    <p class="page-subtitle">View complete assessment history with all statuses</p>
+
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="margin: 0;">All Assessments</h2>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <label style="font-weight: 500; color: var(--text-dark);">Filter by Status:</label>
+          <select class="form-input" id="statusFilter" style="width: auto; min-width: 200px;" onchange="filterAssessments()">
+            <option value="all">All Statuses</option>
+            <option value="awaiting-review">Awaiting Doctor Review</option>
+            <option value="approved">Prescription Approved by Doctor</option>
+            <option value="rejected">Assessment Rejected by Doctor</option>
+          </select>
+        </div>
+      </div>
+      
+      <table class="table" id="assessmentsTable">
+        <thead>
+          <tr>
+            <th>Patient Name</th>
+            <th>Service</th>
+            <th>Product</th>
+            <th>Submitted</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="assessmentsBody">
+          <tr data-status="awaiting-review">
+            <td>John Doe</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product A</td>
+            <td>Jan 15, 2025</td>
+            <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
+            <td><a href="doctor-review.html" class="link">Review</a></td>
+          </tr>
+          <tr data-status="awaiting-review">
+            <td>Jane Smith</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product B</td>
+            <td>Jan 15, 2025</td>
+            <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
+            <td><a href="doctor-review.html" class="link">Review</a></td>
+          </tr>
+          <tr data-status="awaiting-review">
+            <td>Mike Johnson</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product A</td>
+            <td>Jan 14, 2025</td>
+            <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
+            <td><a href="doctor-review.html" class="link">Review</a></td>
+          </tr>
+          <tr data-status="approved">
+            <td>Sarah Williams</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product C</td>
+            <td>Jan 13, 2025</td>
+            <td><span class="badge badge-approved">Prescription Approved by Doctor</span></td>
+            <td><a href="doctor-review.html" class="link">View</a></td>
+          </tr>
+          <tr data-status="approved">
+            <td>David Brown</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product A</td>
+            <td>Jan 12, 2025</td>
+            <td><span class="badge badge-approved">Prescription Approved by Doctor</span></td>
+            <td><a href="doctor-review.html" class="link">View</a></td>
+          </tr>
+          <tr data-status="approved">
+            <td>Robert Taylor</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product B</td>
+            <td>Jan 11, 2025</td>
+            <td><span class="badge badge-approved">Prescription Approved by Doctor</span></td>
+            <td><a href="doctor-review.html" class="link">View</a></td>
+          </tr>
+          <tr data-status="rejected">
+            <td>Emily Davis</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product B</td>
+            <td>Jan 11, 2025</td>
+            <td><span class="badge badge-rejected">Assessment Rejected by Doctor</span></td>
+            <td><a href="doctor-review.html" class="link">View</a></td>
+          </tr>
+          <tr data-status="rejected">
+            <td>Michael Wilson</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product A</td>
+            <td>Jan 10, 2025</td>
+            <td><span class="badge badge-rejected">Assessment Rejected by Doctor</span></td>
+            <td><a href="doctor-review.html" class="link">View</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="../js/app.js"></script>
+  <script>
+    // Filter assessments by status
+    function filterAssessments() {
+      const filter = document.getElementById('statusFilter').value;
+      const rows = document.querySelectorAll('#assessmentsBody tr');
+      
+      rows.forEach(row => {
+        if (filter === 'all' || row.getAttribute('data-status') === filter) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+
