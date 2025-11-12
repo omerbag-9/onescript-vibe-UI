@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment Status - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+    
+    <h1 class="page-title">Assessment Status</h1>
+
+    <div class="card">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <span class="badge badge-pending" style="font-size: 1rem; padding: 0.5rem 1.5rem;">Pending Approval</span>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Assessment Details</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <strong>Service:</strong> Erectile Dysfunction
+          </div>
+          <div>
+            <strong>Product:</strong> Product A
+          </div>
+          <div>
+            <strong>Submitted:</strong> January 15, 2025
+          </div>
+          <div>
+            <strong>Status:</strong> Pending Approval
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <p><strong>What happens next?</strong> Your assessment has been submitted and is awaiting review by a licensed doctor. You will receive an email notification once a decision has been made.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script>
+    fetch('../components/header.html').then(r => r.text()).then(html => document.getElementById('header').innerHTML = html);
+    fetch('../components/footer.html').then(r => r.text()).then(html => document.getElementById('footer').innerHTML = html);
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>
+
+

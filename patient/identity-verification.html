@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identity Verification - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1 class="page-title">Verify Your Identity</h1>
+    <p class="page-subtitle">We use Stripe verification to securely verify your identity. This is required to proceed with your assessment.</p>
+
+    <div class="card">
+      <div class="info-box">
+        <p><strong>Why we need this:</strong> Identity verification ensures the safety and security of our healthcare services. Your information is encrypted and secure.</p>
+      </div>
+
+      <form>
+        <div class="form-group">
+          <label class="form-label">Government-Issued ID Type</label>
+          <select class="form-input" required>
+            <option value="">Select ID type</option>
+            <option value="drivers-license">Driver's License</option>
+            <option value="passport">Passport</option>
+            <option value="health-card">Health Card</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Upload ID Document (Front)</label>
+          <input type="file" class="form-input" accept="image/*" required>
+          <small style="color: var(--text-light);">Please upload a clear photo of your ID</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Upload ID Document (Back)</label>
+          <input type="file" class="form-input" accept="image/*" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Selfie Verification</label>
+          <input type="file" class="form-input" accept="image/*" required>
+          <small style="color: var(--text-light);">Please take a selfie holding your ID next to your face</small>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+          <button type="submit" class="btn-primary">Verify via Stripe →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script>
+    fetch('../components/header.html').then(r => r.text()).then(html => document.getElementById('header').innerHTML = html);
+    fetch('../components/footer.html').then(r => r.text()).then(html => document.getElementById('footer').innerHTML = html);
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>
+
+

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Doctors - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="admin-dashboard.html" class="back-link">← Back to Dashboard</a>
+    
+    <h1 class="page-title">Manage Doctors</h1>
+    <p class="page-subtitle">Add doctors by email invitation with assigned user roles</p>
+
+    <div class="card" style="margin-bottom: 2rem;">
+      <h2 style="margin-bottom: 1.5rem;">Add New Doctor</h2>
+      <form>
+        <div class="form-group">
+          <label class="form-label">Doctor Email Address</label>
+          <input type="email" class="form-input" placeholder="doctor@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Assign User Role</label>
+          <select class="form-input" required>
+            <option value="">Select role</option>
+            <option value="doctor">Doctor</option>
+            <option value="senior-doctor">Senior Doctor</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-primary">Send Invitation</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom: 1.5rem;">Existing Doctors</h2>
+      
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Added Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>dr.smith@example.com</td>
+            <td>Doctor</td>
+            <td><span class="badge badge-approved">Active</span></td>
+            <td>Jan 1, 2025</td>
+            <td><a href="#" class="link">Edit</a> | <a href="#" class="link" style="color: var(--error);">Remove</a></td>
+          </tr>
+          <tr>
+            <td>dr.jones@example.com</td>
+            <td>Senior Doctor</td>
+            <td><span class="badge badge-approved">Active</span></td>
+            <td>Jan 5, 2025</td>
+            <td><a href="#" class="link">Edit</a> | <a href="#" class="link" style="color: var(--error);">Remove</a></td>
+          </tr>
+          <tr>
+            <td>dr.brown@example.com</td>
+            <td>Doctor</td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td>Jan 10, 2025</td>
+            <td><a href="#" class="link">Edit</a> | <a href="#" class="link" style="color: var(--error);">Remove</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script>
+    fetch('../components/header.html').then(r => r.text()).then(html => document.getElementById('header').innerHTML = html);
+    fetch('../components/footer.html').then(r => r.text()).then(html => document.getElementById('footer').innerHTML = html);
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>
+
+

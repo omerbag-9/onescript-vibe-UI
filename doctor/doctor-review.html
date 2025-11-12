@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Assessment - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="doctor-dashboard.html" class="back-link">← Back to Dashboard</a>
+    
+    <h1 class="page-title">Review Assessment</h1>
+
+    <div class="card">
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Patient Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div><strong>Name:</strong> John Doe</div>
+          <div><strong>Date of Birth:</strong> 01/01/1980</div>
+          <div><strong>Email:</strong> john.doe@example.com</div>
+          <div><strong>Health Card:</strong> 1234567890AB</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Assessment Details</h3>
+        <div style="margin-bottom: 1rem;">
+          <strong>Service:</strong> Erectile Dysfunction<br>
+          <strong>Product:</strong> Product A<br>
+          <strong>Submitted:</strong> January 15, 2025
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Assessment Responses</h3>
+        <div class="card" style="background-color: var(--bg-light); padding: 1.5rem;">
+          <div style="margin-bottom: 1rem;">
+            <strong>1. How long have you been experiencing symptoms?</strong><br>
+            <span style="color: var(--text-light);">3-6 months</span>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <strong>2. Do you have any existing medical conditions?</strong><br>
+            <span style="color: var(--text-light);">None</span>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <strong>3. Are you currently taking any medications?</strong><br>
+            <span style="color: var(--text-light);">No medications</span>
+          </div>
+          <div>
+            <strong>4. Have you tried any treatments before?</strong><br>
+            <span style="color: var(--text-light);">No</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Decision</h3>
+        <div class="form-group">
+          <label class="form-label">Add Note (Optional)</label>
+          <textarea class="form-input" rows="4" placeholder="Add any notes about your decision..."></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button class="btn-secondary" style="flex: 1;">Reject</button>
+        <button class="btn-primary" style="flex: 1;">Approve</button>
+      </div>
+
+      <div style="margin-top: 2rem; padding: 1rem; background-color: var(--bg-light); border-radius: 4px;">
+        <strong>Chat with Patient</strong>
+        <p style="margin-top: 0.5rem; color: var(--text-light);">You can initiate a chat with the patient if you need more information.</p>
+        <button class="btn-primary" style="margin-top: 1rem;">Start Chat</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script>
+    fetch('../components/header.html').then(r => r.text()).then(html => document.getElementById('header').innerHTML = html);
+    fetch('../components/footer.html').then(r => r.text()).then(html => document.getElementById('footer').innerHTML = html);
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>
+
+

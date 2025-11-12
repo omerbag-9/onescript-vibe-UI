@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Dashboard - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1 class="page-title">Doctor Dashboard</h1>
+    <p class="page-subtitle">Review and manage patient assessments</p>
+
+    <div class="dashboard-grid">
+      <div class="dashboard-card">
+        <h3>Pending Reviews</h3>
+        <div class="value">5</div>
+      </div>
+      <div class="dashboard-card">
+        <h3>Approved Today</h3>
+        <div class="value">12</div>
+      </div>
+      <div class="dashboard-card">
+        <h3>Rejected Today</h3>
+        <div class="value">2</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 2rem;">
+      <h2 style="margin-bottom: 1.5rem;">Pending Assessments</h2>
+      
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Patient Name</th>
+            <th>Service</th>
+            <th>Product</th>
+            <th>Submitted</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>John Doe</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product A</td>
+            <td>Jan 15, 2025</td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td><a href="doctor-review.html" class="link">Review</a></td>
+          </tr>
+          <tr>
+            <td>Jane Smith</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product B</td>
+            <td>Jan 15, 2025</td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td><a href="doctor-review.html" class="link">Review</a></td>
+          </tr>
+          <tr>
+            <td>Mike Johnson</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product A</td>
+            <td>Jan 14, 2025</td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td><a href="doctor-review.html" class="link">Review</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script>
+    fetch('../components/header.html').then(r => r.text()).then(html => document.getElementById('header').innerHTML = html);
+    fetch('../components/footer.html').then(r => r.text()).then(html => document.getElementById('footer').innerHTML = html);
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>
+
+
