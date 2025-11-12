@@ -16,22 +16,33 @@
     <div class="dashboard-grid">
       <div class="dashboard-card">
         <h3>Assessments Awaiting Review</h3>
-        <div class="value">5</div>
+        <div class="value" id="pendingCount">5</div>
       </div>
       <div class="dashboard-card">
         <h3>Prescriptions Approved Today</h3>
-        <div class="value">12</div>
+        <div class="value" id="approvedCount">12</div>
       </div>
       <div class="dashboard-card">
         <h3>Assessments Rejected Today</h3>
-        <div class="value">2</div>
+        <div class="value" id="rejectedCount">2</div>
       </div>
     </div>
 
     <div class="card" style="margin-top: 2rem;">
-      <h2 style="margin-bottom: 1.5rem;">Assessments Awaiting Review</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="margin: 0;">All Assessments</h2>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <label style="font-weight: 500; color: var(--text-dark);">Filter by Status:</label>
+          <select class="form-input" id="statusFilter" style="width: auto; min-width: 200px;" onchange="filterAssessments()">
+            <option value="all">All Statuses</option>
+            <option value="awaiting-review">Awaiting Doctor Review</option>
+            <option value="approved">Prescription Approved by Doctor</option>
+            <option value="rejected">Assessment Rejected by Doctor</option>
+          </select>
+        </div>
+      </div>
       
-      <table class="table">
+      <table class="table" id="assessmentsTable">
         <thead>
           <tr>
             <th>Patient Name</th>
@@ -42,8 +53,8 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
+        <tbody id="assessmentsBody">
+          <tr data-status="awaiting-review">
             <td>John Doe</td>
             <td>Erectile Dysfunction</td>
             <td>Product A</td>
@@ -51,7 +62,7 @@
             <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
             <td><a href="doctor-review.html" class="link">Review</a></td>
           </tr>
-          <tr>
+          <tr data-status="awaiting-review">
             <td>Jane Smith</td>
             <td>Erectile Dysfunction</td>
             <td>Product B</td>
@@ -59,13 +70,37 @@
             <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
             <td><a href="doctor-review.html" class="link">Review</a></td>
           </tr>
-          <tr>
+          <tr data-status="awaiting-review">
             <td>Mike Johnson</td>
             <td>Erectile Dysfunction</td>
             <td>Product A</td>
             <td>Jan 14, 2025</td>
             <td><span class="badge badge-pending">Awaiting Doctor Review</span></td>
             <td><a href="doctor-review.html" class="link">Review</a></td>
+          </tr>
+          <tr data-status="approved">
+            <td>Sarah Williams</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product C</td>
+            <td>Jan 13, 2025</td>
+            <td><span class="badge badge-approved">Prescription Approved by Doctor</span></td>
+            <td><a href="doctor-review.html" class="link">View</a></td>
+          </tr>
+          <tr data-status="approved">
+            <td>David Brown</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product A</td>
+            <td>Jan 12, 2025</td>
+            <td><span class="badge badge-approved">Prescription Approved by Doctor</span></td>
+            <td><a href="doctor-review.html" class="link">View</a></td>
+          </tr>
+          <tr data-status="rejected">
+            <td>Emily Davis</td>
+            <td>Erectile Dysfunction</td>
+            <td>Product B</td>
+            <td>Jan 11, 2025</td>
+            <td><span class="badge badge-rejected">Assessment Rejected by Doctor</span></td>
+            <td><a href="doctor-review.html" class="link">View</a></td>
           </tr>
         </tbody>
       </table>
@@ -74,12 +109,48 @@
 
   <div id="footer"></div>
 
-  <script>
-    fetch('../components/header.html').then(r => r.text()).then(html => document.getElementById('header').innerHTML = html);
-    fetch('../components/footer.html').then(r => r.text()).then(html => document.getElementById('footer').innerHTML = html);
-  </script>
   <script src="../js/app.js"></script>
+  <script>
+    // Filter assessments by status
+    function filterAssessments() {
+      const filter = document.getElementById('statusFilter').value;
+      const rows = document.querySelectorAll('#assessmentsBody tr');
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        if (filter === 'all' || row.getAttribute('data-status') === filter) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Update counts
+      updateCounts();
+    }
+
+    // Update dashboard counts
+    function updateCounts() {
+      const rows = document.querySelectorAll('#assessmentsBody tr');
+      let pending = 0, approved = 0, rejected = 0;
+
+      rows.forEach(row => {
+        if (row.style.display !== 'none') {
+          const status = row.getAttribute('data-status');
+          if (status === 'awaiting-review') pending++;
+          else if (status === 'approved') approved++;
+          else if (status === 'rejected') rejected++;
+        }
+      });
+
+      document.getElementById('pendingCount').textContent = pending;
+      document.getElementById('approvedCount').textContent = approved;
+      document.getElementById('rejectedCount').textContent = rejected;
+    }
+
+    // Initialize
+    updateCounts();
+  </script>
 </body>
 </html>
-
-

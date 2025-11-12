@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order History - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="pharmacist-dashboard.html" class="back-link">← Back to Dashboard</a>
+    
+    <h1 class="page-title">Order History</h1>
+    <p class="page-subtitle">View complete order history with payment records and assessment details</p>
+
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2>All Orders</h2>
+        <select class="form-input" id="filterStatus" style="width: auto;" onchange="filterOrders()">
+          <option value="all">All Statuses</option>
+          <option value="fulfilled">Fulfilled</option>
+          <option value="shipped">Shipped</option>
+          <option value="pending">Ready to Fulfill</option>
+        </select>
+      </div>
+
+      <table class="table" id="ordersTable">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Patient Name</th>
+            <th>Product</th>
+            <th>Payment Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <tr data-status="fulfilled">
+            <td>#ORD-001</td>
+            <td>John Doe</td>
+            <td>Product A</td>
+            <td>One-Time</td>
+            <td>$99.99</td>
+            <td><span class="badge badge-approved">Fulfilled & Shipped</span></td>
+            <td>Jan 12, 2025</td>
+            <td>
+              <a href="pharmacist-order-details.html?order=ORD-001" class="link">View Details</a> |
+              <a href="pharmacist-packing-slip.html?order=ORD-001" class="link">Packing Slip</a> |
+              <a href="pharmacist-shipping-label.html?order=ORD-001" class="link">Shipping Label</a>
+            </td>
+          </tr>
+          <tr data-status="fulfilled">
+            <td>#ORD-002</td>
+            <td>Jane Smith</td>
+            <td>Product B</td>
+            <td>Subscription (3 months)</td>
+            <td>$79.99/month</td>
+            <td><span class="badge badge-approved">Fulfilled & Shipped</span></td>
+            <td>Jan 13, 2025</td>
+            <td>
+              <a href="pharmacist-order-details.html?order=ORD-002" class="link">View Details</a> |
+              <a href="pharmacist-packing-slip.html?order=ORD-002" class="link">Packing Slip</a> |
+              <a href="pharmacist-shipping-label.html?order=ORD-002" class="link">Shipping Label</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="../js/app.js"></script>
+  <script>
+    function filterOrders() {
+      const filter = document.getElementById('filterStatus').value;
+      const rows = document.querySelectorAll('#ordersBody tr');
+      
+      rows.forEach(row => {
+        if (filter === 'all' || row.getAttribute('data-status') === filter) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+

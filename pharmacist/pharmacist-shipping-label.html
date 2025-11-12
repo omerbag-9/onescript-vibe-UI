@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shipping Label - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="pharmacist-order-details.html" class="back-link">← Back to Order Details</a>
+    
+    <h1 class="page-title">Shipping Label</h1>
+
+    <div class="card" style="max-width: 600px; margin: 0 auto; border: 2px dashed var(--border-light);">
+      <div style="padding: 2rem;">
+        <div style="margin-bottom: 2rem;">
+          <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">FROM:</div>
+          <div style="font-weight: 600;">
+            OneScript Pharmacy<br>
+            456 Pharmacy Street<br>
+            Toronto, ON M5H 3K4<br>
+            Canada
+          </div>
+        </div>
+
+        <div style="border-top: 2px solid var(--text-dark); border-bottom: 2px solid var(--text-dark); padding: 1.5rem 0; margin: 1.5rem 0;">
+          <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">TO:</div>
+          <div style="font-weight: 600; font-size: 1.1rem;">
+            John Doe<br>
+            123 Main Street<br>
+            Toronto, ON M5H 2N2<br>
+            Canada
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+          <div>
+            <div style="font-size: 0.9rem; color: var(--text-light);">Tracking:</div>
+            <div style="font-weight: 600; font-family: monospace;">CP123456789</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.9rem; color: var(--text-light);">Order ID:</div>
+            <div style="font-weight: 600;">#ORD-001</div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem; padding: 1rem; background-color: var(--bg-light); border-radius: 4px;">
+          <div style="font-family: monospace; font-size: 1.5rem; letter-spacing: 2px; margin-bottom: 0.5rem;">[BARCODE]</div>
+          <div style="font-size: 0.85rem; color: var(--text-light);">CP123456789</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+        <button class="btn-primary" onclick="window.print()">Print Shipping Label</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>
+

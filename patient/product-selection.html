@@ -13,22 +13,8 @@
     <h1 class="page-title">Select a Product</h1>
     <p class="page-subtitle">All products related to Erectile Dysfunction appear here</p>
 
-    <div class="service-grid">
-      <div class="service-card" onclick="showAccountModal('Product A')">
-        <h3>Product A</h3>
-        <p>Description of product A for erectile dysfunction treatment.</p>
-        <div style="margin-top: 1rem; font-weight: 600; color: var(--primary-teal);">$XX.XX</div>
-      </div>
-      <div class="service-card" onclick="showAccountModal('Product B')">
-        <h3>Product B</h3>
-        <p>Description of product B for erectile dysfunction treatment.</p>
-        <div style="margin-top: 1rem; font-weight: 600; color: var(--primary-teal);">$XX.XX</div>
-      </div>
-      <div class="service-card" onclick="showAccountModal('Product C')">
-        <h3>Product C</h3>
-        <p>Description of product C for erectile dysfunction treatment.</p>
-        <div style="margin-top: 1rem; font-weight: 600; color: var(--primary-teal);">$XX.XX</div>
-      </div>
+    <div class="service-grid" id="productsGrid">
+      <!-- Products will be loaded dynamically -->
     </div>
 
     <!-- Account Required Modal -->
@@ -59,9 +45,65 @@
 
   <script src="../js/app.js"></script>
   <script>
-    // Setup modal close functionality
+    // Load products from localStorage
+    function loadProducts() {
+      const products = JSON.parse(localStorage.getItem('products') || '[]');
+      const grid = document.getElementById('productsGrid');
+      
+      if (products.length === 0) {
+        // Default products if none exist
+        const defaultProducts = [
+          { id: 'prod1', name: 'Product A', description: 'Description of product A for erectile dysfunction treatment.', price: 99.99, paymentType: 'one-time' },
+          { id: 'prod2', name: 'Product B', description: 'Description of product B for erectile dysfunction treatment.', price: 79.99, paymentType: 'subscription', subscriptionMonths: 3 },
+          { id: 'prod3', name: 'Product C', description: 'Description of product C for erectile dysfunction treatment.', price: 89.99, paymentType: 'subscription', subscriptionMonths: 6 }
+        ];
+        displayProducts(defaultProducts);
+      } else {
+        displayProducts(products);
+      }
+    }
+
+    function displayProducts(products) {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '';
+
+      products.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'service-card';
+        card.onclick = () => showAccountModal(product.name, product.id);
+        
+        const priceDisplay = product.paymentType === 'subscription'
+          ? `$${product.price}/month (${product.subscriptionMonths} months)`
+          : `$${product.price} (One-Time)`;
+
+        card.innerHTML = `
+          <h3>${product.name}</h3>
+          <p>${product.description || 'No description available'}</p>
+          <div style="margin-top: 1rem;">
+            <div style="font-weight: 600; color: var(--primary-teal); font-size: 1.1rem;">${priceDisplay}</div>
+            <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">
+              ${product.paymentType === 'subscription' ? '📅 Monthly Subscription' : '💳 One-Time Payment'}
+            </div>
+          </div>
+        `;
+        
+        grid.appendChild(card);
+      });
+    }
+
+    function showAccountModal(productName, productId) {
+      document.getElementById('selectedProduct').textContent = productName;
+      // Store selected product ID
+      sessionStorage.setItem('selectedProductId', productId);
+      showModal('accountModal');
+    }
+
+    function closeAccountModal() {
+      closeModal('accountModal');
+    }
+
+    loadProducts();
     setupModalClose('accountModal');
   </script>
 </body>
 </html>
-

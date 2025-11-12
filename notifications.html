@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications - OneScript</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h1 class="page-title">Notifications</h1>
+    <p class="page-subtitle">Stay updated with your account activity</p>
+
+    <div class="card">
+      <div id="notificationsList">
+        <!-- Notifications will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/notifications.js"></script>
+  <script>
+    // Load and display notifications
+    function loadNotifications() {
+      const role = getCurrentRole();
+      const notifications = getNotificationsForRole(role);
+      displayNotifications(notifications);
+    }
+
+    function displayNotifications(notifications) {
+      const list = document.getElementById('notificationsList');
+      
+      if (notifications.length === 0) {
+        list.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No notifications</p>';
+        return;
+      }
+
+      list.innerHTML = notifications.map(notif => `
+        <div class="notification-item" onclick="markAsRead('${notif.id}')" style="padding: 1rem; border-bottom: 1px solid var(--border-light); cursor: pointer; ${notif.read ? '' : 'background-color: #E3F2FD;'}">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div style="flex: 1;">
+              <strong>${notif.title}</strong>
+              <p style="margin: 0.5rem 0 0 0; color: var(--text-dark);">${notif.message}</p>
+              <span style="font-size: 0.85rem; color: var(--text-light);">${notif.time}</span>
+            </div>
+            ${notif.read ? '' : '<span class="badge badge-pending" style="font-size: 0.7rem;">New</span>'}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Mark as read and reload
+    function markAsRead(notificationId) {
+      const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+      const notification = notifications.find(n => n.id === notificationId);
+      if (notification && !notification.read) {
+        notification.read = true;
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+        loadNotifications();
+        if (typeof updateNotificationBadge === 'function') {
+          updateNotificationBadge();
+        }
+      }
+    }
+
+    loadNotifications();
+  </script>
+</body>
+</html>

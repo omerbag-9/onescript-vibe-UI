@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="pharmacist-history.html" class="back-link">← Back to History</a>
+    
+    <h1 class="page-title">Order Details</h1>
+
+    <div class="card">
+      <h2 style="margin-bottom: 1.5rem;">Order Information</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+        <div><strong>Order ID:</strong> #ORD-001</div>
+        <div><strong>Date:</strong> January 12, 2025</div>
+        <div><strong>Patient:</strong> John Doe</div>
+        <div><strong>Status:</strong> <span class="badge badge-approved">Fulfilled & Shipped</span></div>
+      </div>
+
+      <h3 style="margin-bottom: 1rem;">Product Information</h3>
+      <div style="padding: 1rem; background-color: var(--bg-light); border-radius: 4px; margin-bottom: 2rem;">
+        <div><strong>Product:</strong> Product A</div>
+        <div style="margin-top: 0.5rem;"><strong>Payment Type:</strong> One-Time Payment</div>
+        <div style="margin-top: 0.5rem;"><strong>Amount:</strong> $99.99</div>
+      </div>
+
+      <h3 style="margin-bottom: 1rem;">Payment Record</h3>
+      <div style="padding: 1rem; background-color: var(--bg-light); border-radius: 4px; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong>Payment Receipt</strong>
+            <p style="margin: 0.5rem 0 0 0; color: var(--text-light);">Order #ORD-001 - $99.99</p>
+            <p style="margin: 0.25rem 0 0 0; color: var(--text-light); font-size: 0.9rem;">Paid on: January 12, 2025</p>
+          </div>
+          <button class="btn-primary" onclick="downloadPDF()">Download PDF Receipt</button>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom: 1rem;">Full Assessment History</h3>
+      <div style="padding: 1rem; background-color: var(--bg-light); border-radius: 4px; margin-bottom: 2rem;">
+        <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-light);">
+          <strong>Assessment Submitted:</strong> January 10, 2025
+          <p style="margin: 0.5rem 0 0 0; color: var(--text-light); font-size: 0.9rem;">Patient completed assessment for Erectile Dysfunction</p>
+        </div>
+        <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-light);">
+          <strong>Doctor Review:</strong> January 11, 2025 - Approved
+          <p style="margin: 0.5rem 0 0 0; color: var(--text-light); font-size: 0.9rem;">Dr. Smith reviewed and approved the prescription</p>
+        </div>
+        <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-light);">
+          <strong>Payment Processed:</strong> January 12, 2025
+          <p style="margin: 0.5rem 0 0 0; color: var(--text-light); font-size: 0.9rem;">One-time payment of $99.99 processed successfully</p>
+        </div>
+        <div>
+          <strong>Order Fulfilled:</strong> January 12, 2025
+          <p style="margin: 0.5rem 0 0 0; color: var(--text-light); font-size: 0.9rem;">Order packaged and shipped to patient</p>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom: 1rem;">Shipping Information</h3>
+      <div style="padding: 1rem; background-color: var(--bg-light); border-radius: 4px; margin-bottom: 2rem;">
+        <div><strong>Address:</strong> 123 Main Street, Toronto, ON M5H 2N2</div>
+        <div style="margin-top: 0.5rem;"><strong>Shipping Method:</strong> Canada Post</div>
+        <div style="margin-top: 0.5rem;"><strong>Tracking Number:</strong> CP123456789</div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <a href="pharmacist-packing-slip.html?order=ORD-001" class="btn-primary">View Packing Slip</a>
+        <a href="pharmacist-shipping-label.html?order=ORD-001" class="btn-secondary">View Shipping Label</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="../js/app.js"></script>
+  <script>
+    function downloadPDF() {
+      alert('PDF receipt would be generated here. In production, this would download the actual PDF file.');
+      // In production: window.open('/api/generate-pdf?order=ORD-001', '_blank');
+    }
+  </script>
+</body>
+</html>
+

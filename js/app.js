@@ -5,7 +5,26 @@ document.addEventListener('DOMContentLoaded', function() {
   loadHeader();
   loadFooter();
   initializeForms();
+  
+  // Load notifications script dynamically
+  loadNotificationsScript();
 });
+
+// Load notifications script
+function loadNotificationsScript() {
+  if (window.notificationsLoaded) return;
+  
+  const script = document.createElement('script');
+  const isRoot = window.location.pathname === '/' || window.location.pathname.endsWith('/index.html');
+  script.src = isRoot ? 'js/notifications.js' : '../js/notifications.js';
+  script.onload = function() {
+    if (typeof initNotifications === 'function') {
+      initNotifications();
+    }
+  };
+  document.head.appendChild(script);
+  window.notificationsLoaded = true;
+}
 
 // Load header component
 function loadHeader() {
