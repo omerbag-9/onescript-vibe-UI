@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Structure Verification - OneScript</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .check {
+      background: white;
+      padding: 20px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid #00BFA5;
+    }
+    .error {
+      border-left-color: #E53935;
+    }
+    h1 { color: #00BFA5; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>🔍 GitHub Pages Structure Verification</h1>
+  
+  <div class="check">
+    <h3>✅ Required Files in Root:</h3>
+    <ul>
+      <li><code>index.html</code> - Landing page</li>
+      <li><code>styles.css</code> - Main stylesheet</li>
+      <li><code>.nojekyll</code> - Disable Jekyll processing</li>
+    </ul>
+  </div>
+
+  <div class="check">
+    <h3>📁 Folder Structure:</h3>
+    <pre>
+onescript-vibe-UI/
+├── index.html          ← MUST be in root
+├── styles.css          ← MUST be in root
+├── .nojekyll           ← MUST be in root
+├── js/
+│   └── app.js
+├── components/
+├── auth/
+├── patient/
+├── doctor/
+├── pharmacist/
+└── admin/
+    </pre>
+  </div>
+
+  <div class="check error">
+    <h3>⚠️ Common GitHub Pages Issues:</h3>
+    <ol>
+      <li><strong>Wrong Source Folder:</strong> Settings → Pages → Source must be <code>/ (root)</code> NOT <code>/docs</code></li>
+      <li><strong>Wrong Branch:</strong> Must be <code>main</code> or <code>master</code></li>
+      <li><strong>Missing .nojekyll:</strong> File must exist in root</li>
+      <li><strong>Case Sensitivity:</strong> URL must match repository name exactly</li>
+      <li><strong>Cache:</strong> Wait 5-10 minutes after changes</li>
+    </ol>
+  </div>
+
+  <div class="check">
+    <h3>🔧 Fix Steps:</h3>
+    <ol>
+      <li>Go to: <code>https://github.com/omerbag-9/onescript-vibe-UI/settings/pages</code></li>
+      <li>Under "Source":</li>
+      <li style="margin-left: 20px;">→ Branch: <strong>main</strong></li>
+      <li style="margin-left: 20px;">→ Folder: <strong>/ (root)</strong></li>
+      <li>Click <strong>Save</strong></li>
+      <li>Wait 2-3 minutes</li>
+      <li>Visit: <code>https://omerbag-9.github.io/onescript-vibe-UI/</code></li>
+    </ol>
+  </div>
+
+  <div class="check">
+    <h3>✅ Verify Your URL:</h3>
+    <p>Your GitHub Pages URL should be:</p>
+    <code>https://omerbag-9.github.io/onescript-vibe-UI/</code>
+    <p style="color: #E53935;"><strong>Note:</strong> Include the trailing slash <code>/</code></p>
+  </div>
+
+  <div class="check">
+    <h3>🚀 Alternative: Quick Deploy to Netlify</h3>
+    <p>If GitHub Pages still doesn't work:</p>
+    <ol>
+      <li>Go to <a href="https://netlify.com">netlify.com</a></li>
+      <li>Drag and drop your project folder</li>
+      <li>Site is live instantly!</li>
+    </ol>
+  </div>
+</body>
+</html>
+
