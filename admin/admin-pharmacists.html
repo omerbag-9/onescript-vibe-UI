@@ -13,7 +13,7 @@
     <a href="admin-dashboard.html" class="back-link">← Back to Dashboard</a>
     
     <h1 class="page-title">Manage Pharmacists</h1>
-    <p class="page-subtitle">Add pharmacists by email invitation with assigned user roles</p>
+    <p class="page-subtitle">Add pharmacists by email invitation</p>
 
     <div class="card" style="margin-bottom: 2rem;">
       <h2 style="margin-bottom: 1.5rem;">Add New Pharmacist</h2>
@@ -21,15 +21,6 @@
         <div class="form-group">
           <label class="form-label">Pharmacist Email Address</label>
           <input type="email" class="form-input" id="pharmacistEmail" placeholder="pharmacist@example.com" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Assign User Role</label>
-          <select class="form-input" id="pharmacistRole" required>
-            <option value="">Select role</option>
-            <option value="pharmacist">Pharmacist</option>
-            <option value="senior-pharmacist">Senior Pharmacist</option>
-          </select>
         </div>
 
         <button type="submit" class="btn-primary">Send Invitation</button>
@@ -83,9 +74,8 @@
     document.getElementById('addPharmacistForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const email = document.getElementById('pharmacistEmail').value;
-      const role = document.getElementById('pharmacistRole').value;
       
-      alert(`Invitation sent to ${email} with role: ${role}`);
+      alert(`Invitation sent to ${email}`);
       this.reset();
     });
   </script>

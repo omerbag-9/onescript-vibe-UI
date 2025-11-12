@@ -125,7 +125,7 @@ function showNotificationToast(title, message, type) {
   }, 5000);
 }
 
-// Mark notification as read
+// Mark notification as read (global function)
 function markAsRead(notificationId) {
   const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
   const notification = notifications.find(n => n.id === notificationId);
@@ -133,11 +133,66 @@ function markAsRead(notificationId) {
     notification.read = true;
     localStorage.setItem('notifications', JSON.stringify(notifications));
     updateNotificationBadge();
+    loadNotificationDropdown(); // Refresh dropdown
   }
 }
 
+// Make toggleNotifications globally accessible
+window.toggleNotifications = function(event) {
+  event.preventDefault();
+  const dropdown = document.getElementById('notificationDropdown');
+  if (dropdown) {
+    const isVisible = dropdown.style.display === 'block';
+    dropdown.style.display = isVisible ? 'none' : 'block';
+    
+    if (!isVisible) {
+      loadNotificationDropdown();
+    }
+  }
+};
+
+
+// Load notifications in dropdown
+function loadNotificationDropdown() {
+  const role = getCurrentRole();
+  const notifications = getNotificationsForRole(role);
+  const list = document.getElementById('notificationList');
+  
+  if (!list) return;
+  
+  if (notifications.length === 0) {
+    list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-light);">No notifications</div>';
+    return;
+  }
+
+  // Show only latest 5 notifications
+  const recentNotifications = notifications.slice(0, 5);
+  
+  list.innerHTML = recentNotifications.map(notif => `
+    <div class="notification-item-dropdown ${notif.read ? '' : 'unread'}" onclick="markAsRead('${notif.id}')">
+      <strong>${notif.title}</strong>
+      <p>${notif.message}</p>
+      <span>${notif.time}</span>
+    </div>
+  `).join('');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('notificationDropdown');
+  const bell = document.querySelector('.notification-bell');
+  
+  if (dropdown && bell && !dropdown.contains(event.target) && !bell.contains(event.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
 // Initialize on page load
 if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', initNotifications);
+  document.addEventListener('DOMContentLoaded', function() {
+    initNotifications();
+    // Load dropdown notifications after a short delay to ensure header is loaded
+    setTimeout(loadNotificationDropdown, 500);
+  });
 }
 

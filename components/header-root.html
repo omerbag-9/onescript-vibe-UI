@@ -6,10 +6,21 @@
     <a href="#" onclick="return false;" style="opacity: 0.5; cursor: not-allowed;">FAQ <span>▼</span></a>
     <a href="#" onclick="return false;" style="opacity: 0.5; cursor: not-allowed;">Contact</a>
     <a href="patient/service-selection.html" class="btn-primary">Get Started →</a>
-    <a href="notifications.html" class="notification-bell" title="Notifications">
-      🔔
-      <span class="notification-badge" id="notificationCount">3</span>
-    </a>
+    <div class="notification-dropdown" style="position: relative;">
+      <a href="#" class="notification-bell" title="Notifications" onclick="toggleNotifications(event)">
+        🔔
+        <span class="notification-badge" id="notificationCount">3</span>
+      </a>
+      <div class="notification-dropdown-content" id="notificationDropdown" style="display: none;">
+        <div class="notification-dropdown-header">
+          <h3 style="margin: 0; font-size: 1rem;">Notifications</h3>
+          <a href="notifications.html" style="font-size: 0.85rem; color: var(--primary-teal);">View All</a>
+        </div>
+        <div class="notification-dropdown-list" id="notificationList">
+          <!-- Notifications will be loaded here -->
+        </div>
+      </div>
+    </div>
     <div class="dashboard-switcher">
       <button class="dashboard-btn" onclick="window.location.href='patient/dashboard.html'" title="Patient Dashboard">👤 Patient</button>
       <button class="dashboard-btn" onclick="window.location.href='doctor/doctor-dashboard.html'" title="Doctor Dashboard">👨‍⚕️ Doctor</button>
@@ -18,4 +29,3 @@
     </div>
   </nav>
 </header>
-
