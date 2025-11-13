@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Prescription Refill - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="prescription-details.html" class="back-link">← Back to Prescription Details</a>
+    
+    <h1 class="page-title">Request Prescription Refill</h1>
+
+    <div class="card">
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Current Prescription Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; background-color: var(--bg-light); border-radius: 4px;">
+          <div>
+            <strong>Product:</strong> Product B
+          </div>
+          <div>
+            <strong>Original Approval Date:</strong> January 12, 2025
+          </div>
+          <div>
+            <strong>Last Filled:</strong> January 12, 2025
+          </div>
+          <div>
+            <strong>Status:</strong> <span class="badge badge-approved">Active</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Refill Request Details</h3>
+        <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+          Your refill request will be sent to your doctor for review. The doctor will need to approve or reject your refill request before it can be processed.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Reason for Refill (Optional)</label>
+          <textarea class="form-input" rows="4" placeholder="Please provide any additional information that might help your doctor review your refill request..."></textarea>
+        </div>
+      </div>
+
+      <div style="padding: 1rem; background-color: #E3F2FD; border-left: 4px solid #2196F3; border-radius: 4px; margin-bottom: 2rem;">
+        <strong>ℹ️ What happens next?</strong>
+        <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem; color: var(--text-light);">
+          <li>Your refill request will be sent to your doctor</li>
+          <li>The doctor will review your request and medical history</li>
+          <li>You will be notified once the doctor makes a decision</li>
+          <li>If approved, your prescription will be sent to the pharmacist for fulfillment</li>
+        </ul>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <a href="prescription-details.html" class="btn-secondary" style="flex: 1; text-align: center; text-decoration: none;">Cancel</a>
+        <button class="btn-primary" style="flex: 1;" onclick="submitRefillRequest()">Submit Refill Request</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="../js/app.js"></script>
+  <script>
+    function submitRefillRequest() {
+      // Show confirmation
+      if (confirm('Are you sure you want to submit this refill request? It will be sent to your doctor for review.')) {
+        // In production, this would make an API call
+        // For UI demo, we'll redirect to dashboard with a success message
+        alert('Refill request submitted successfully! Your doctor will review it shortly.');
+        window.location.href = 'dashboard.html';
+      }
+    }
+  </script>
+</body>
+</html>
+

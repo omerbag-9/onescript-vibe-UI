@@ -26,6 +26,10 @@
         <h3>Assessments Rejected Today</h3>
         <div class="value" id="rejectedCount">2</div>
       </div>
+      <div class="dashboard-card">
+        <h3>Refill Requests Awaiting Review</h3>
+        <div class="value" id="refillCount">1</div>
+      </div>
     </div>
 
     <div class="card" style="margin-top: 2rem;">
@@ -89,6 +93,35 @@
         </tbody>
       </table>
     </div>
+
+    <div class="card" style="margin-top: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="margin: 0;">Refill Requests Awaiting Review</h2>
+      </div>
+      
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Patient Name</th>
+            <th>Product</th>
+            <th>Original Approval</th>
+            <th>Refill Requested</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="refillRequestsBody">
+          <tr>
+            <td>John Doe</td>
+            <td>Product B</td>
+            <td>Jan 12, 2025</td>
+            <td>Jan 16, 2025</td>
+            <td><span class="badge badge-pending">Refill Request - Awaiting Doctor Review</span></td>
+            <td><a href="doctor-refill-review.html" class="link">Review</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div id="footer"></div>
@@ -100,6 +133,10 @@
       const rows = document.querySelectorAll('#awaitingReviewBody tr');
       const pending = rows.length;
       document.getElementById('pendingCount').textContent = pending;
+      
+      const refillRows = document.querySelectorAll('#refillRequestsBody tr');
+      const refillPending = refillRows.length;
+      document.getElementById('refillCount').textContent = refillPending;
     }
 
     // Initialize

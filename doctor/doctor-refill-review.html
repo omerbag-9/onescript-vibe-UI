@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Refill Request - OneScript</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="doctor-dashboard.html" class="back-link">← Back to Dashboard</a>
+    
+    <h1 class="page-title">Review Refill Request</h1>
+
+    <div class="card">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <span class="badge badge-pending" style="font-size: 1rem; padding: 0.5rem 1.5rem;">Refill Request - Awaiting Doctor Review</span>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Patient Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div><strong>Name:</strong> John Doe</div>
+          <div><strong>Date of Birth:</strong> 01/01/1980</div>
+          <div><strong>Email:</strong> john.doe@example.com</div>
+          <div><strong>Health Card:</strong> 1234567890AB</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Original Prescription Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; background-color: var(--bg-light); border-radius: 4px;">
+          <div>
+            <strong>Product:</strong> Product B
+          </div>
+          <div>
+            <strong>Original Approval Date:</strong> January 12, 2025
+          </div>
+          <div>
+            <strong>Last Filled:</strong> January 12, 2025
+          </div>
+          <div>
+            <strong>Refill Request Date:</strong> January 16, 2025
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Patient's Refill Request</h3>
+        <div class="card" style="background-color: var(--bg-light); padding: 1.5rem;">
+          <div style="margin-bottom: 1rem;">
+            <strong>Reason for Refill:</strong>
+            <p style="margin: 0.5rem 0 0 0; color: var(--text-light);">
+              I need a refill of my prescription as I'm running low on my current supply. I have been taking the medication as prescribed and have not experienced any adverse effects.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Previous Assessment History</h3>
+        <div class="card" style="background-color: var(--bg-light); padding: 1.5rem;">
+          <div style="margin-bottom: 1rem;">
+            <strong>Original Assessment Date:</strong> January 10, 2025<br>
+            <strong>Assessment Status:</strong> <span class="badge badge-approved">Approved</span><br>
+            <strong>Doctor Notes:</strong> Patient assessment completed. No contraindications found. Prescription approved.
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Decision</h3>
+        <div class="form-group">
+          <label class="form-label">Add Note (Optional)</label>
+          <textarea class="form-input" rows="4" placeholder="Add any notes about your decision regarding this refill request..."></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button class="btn-secondary" style="flex: 1;" onclick="rejectRefill()">Reject Refill Request</button>
+        <button class="btn-primary" style="flex: 1;" onclick="approveRefill()">Approve Refill Request</button>
+      </div>
+
+      <div style="margin-top: 2rem; padding: 1rem; background-color: var(--bg-light); border-radius: 4px;">
+        <strong>Chat with Patient</strong>
+        <p style="margin-top: 0.5rem; color: var(--text-light);">You can initiate a chat with the patient if you need more information about their refill request.</p>
+        <a href="../../chat.html?role=doctor&with=John Doe" class="btn-primary" style="margin-top: 1rem; display: inline-block; text-decoration: none;">Start Chat</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="../js/app.js"></script>
+  <script>
+    function approveRefill() {
+      if (confirm('Are you sure you want to approve this refill request? The prescription will be sent to the pharmacist for fulfillment.')) {
+        alert('Refill request approved successfully! The prescription has been sent to the pharmacist.');
+        window.location.href = 'doctor-dashboard.html';
+      }
+    }
+
+    function rejectRefill() {
+      if (confirm('Are you sure you want to reject this refill request? The patient will be notified of your decision.')) {
+        alert('Refill request rejected. The patient has been notified.');
+        window.location.href = 'doctor-dashboard.html';
+      }
+    }
+  </script>
+</body>
+</html>
+
