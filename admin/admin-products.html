@@ -24,7 +24,7 @@
         </div>
         <button class="btn-primary" onclick="showAddCategoryModal()">+ Add Category</button>
       </div>
-      <div id="categoriesList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <div id="categoriesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
         <!-- Categories will be loaded here -->
       </div>
     </div>
@@ -164,27 +164,93 @@
       categoriesList.innerHTML = '';
 
       if (categories.length === 0) {
-        categoriesList.innerHTML = '<p style="color: var(--text-light); padding: 0.5rem 0;">No categories yet. Click "Add Category" to create one.</p>';
+        categoriesList.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem 2rem; color: var(--text-light);"><p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No categories yet</p><p>Click "Add Category" to create your first category</p></div>';
         return;
       }
 
       categories.forEach(category => {
-        const categoryBadge = document.createElement('div');
-        categoryBadge.style.cssText = `
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.5rem 1rem;
+        // Count products in this category
+        const productCount = products.filter(p => p.category === category.id).length;
+        
+        const categoryCard = document.createElement('div');
+        categoryCard.style.cssText = `
           background: white;
-          border-radius: 20px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          border-radius: 12px;
+          padding: 1.5rem;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          transition: all 0.3s ease;
+          border: 2px solid transparent;
+          position: relative;
+          overflow: hidden;
         `;
-        categoryBadge.innerHTML = `
-          <span style="font-weight: 600;">${category.name}</span>
-          <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="editCategory('${category.id}')">Edit</button>
-          <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: var(--error);" onclick="deleteCategory('${category.id}')">Delete</button>
+        
+        // Add hover effect
+        categoryCard.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-4px)';
+          this.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)';
+          this.style.borderColor = 'var(--primary-teal)';
+        });
+        categoryCard.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+          this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+          this.style.borderColor = 'transparent';
+        });
+        
+        // Create gradient accent bar
+        const accentBar = document.createElement('div');
+        accentBar.style.cssText = `
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, var(--primary-teal) 0%, #B2EBF2 100%);
         `;
-        categoriesList.appendChild(categoryBadge);
+        categoryCard.appendChild(accentBar);
+        
+        // Category icon/indicator
+        const iconCircle = document.createElement('div');
+        iconCircle.style.cssText = `
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, var(--primary-teal) 0%, #B2EBF2 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1rem;
+          font-size: 1.5rem;
+          color: white;
+          font-weight: 600;
+        `;
+        iconCircle.textContent = category.name.charAt(0).toUpperCase();
+        
+        const cardContent = document.createElement('div');
+        cardContent.innerHTML = `
+          <div style="margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1.2rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.25rem;">${category.name}</h3>
+            ${category.description ? `<p style="font-size: 0.9rem; color: var(--text-light); line-height: 1.4; margin-top: 0.5rem;">${category.description}</p>` : '<p style="font-size: 0.85rem; color: var(--text-light); font-style: italic;">No description</p>'}
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; padding: 0.75rem; background: var(--bg-light); border-radius: 8px;">
+            <span style="font-size: 1.5rem; color: var(--primary-teal);">📦</span>
+            <div>
+              <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-dark); line-height: 1;">${productCount}</div>
+              <div style="font-size: 0.75rem; color: var(--text-light);">Product${productCount !== 1 ? 's' : ''}</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+            <button class="btn-secondary" style="flex: 1; padding: 0.6rem; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="editCategory('${category.id}')">
+              <span>✏️</span> Edit
+            </button>
+            <button class="btn-secondary" style="flex: 1; padding: 0.6rem; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; color: var(--error); border-color: var(--error);" onclick="deleteCategory('${category.id}')">
+              <span>🗑️</span> Delete
+            </button>
+          </div>
+        `;
+        
+        categoryCard.appendChild(iconCircle);
+        categoryCard.appendChild(cardContent);
+        categoriesList.appendChild(categoryCard);
       });
     }
 
