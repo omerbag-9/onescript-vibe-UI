@@ -13,7 +13,21 @@
     <a href="admin-dashboard.html" class="back-link">← Back to Dashboard</a>
     
     <h1 class="page-title">Manage Products</h1>
-    <p class="page-subtitle">Add, edit, and manage products for different diseases/conditions</p>
+    <p class="page-subtitle">Add, edit, and manage products and categories</p>
+
+    <!-- Manage Categories Card -->
+    <div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div>
+          <h2 style="margin-bottom: 0.5rem;">Manage Categories</h2>
+          <p style="color: var(--text-light); margin: 0;">Create and manage product categories</p>
+        </div>
+        <button class="btn-primary" onclick="showAddCategoryModal()">+ Add Category</button>
+      </div>
+      <div id="categoriesList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        <!-- Categories will be loaded here -->
+      </div>
+    </div>
 
     <!-- Add New Product Card -->
     <div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 100%);">
@@ -45,6 +59,14 @@
         <div class="form-group">
           <label class="form-label">Product Name</label>
           <input type="text" class="form-input" id="productName" placeholder="e.g., Product A, Product B" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input" id="productCategory" required>
+            <option value="">Select category</option>
+            <!-- Options will be loaded dynamically -->
+          </select>
         </div>
 
         <div class="form-group">
@@ -89,12 +111,82 @@
     </div>
   </div>
 
+  <!-- Add/Edit Category Modal -->
+  <div class="modal-overlay" id="categoryModal">
+    <div class="modal" style="max-width: 500px;">
+      <button class="modal-close" onclick="closeModal('categoryModal')">×</button>
+      <h2 id="categoryModalTitle" style="margin-bottom: 1.5rem;">Add New Category</h2>
+      
+      <form id="categoryForm">
+        <div class="form-group">
+          <label class="form-label">Category Name</label>
+          <input type="text" class="form-input" id="categoryName" placeholder="e.g., Medications, Supplements, Devices" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description (Optional)</label>
+          <textarea class="form-input" id="categoryDescription" rows="2" placeholder="Category description"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('categoryModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="categorySubmitBtn">Add Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="footer"></div>
 
   <script src="../js/app.js"></script>
   <script>
     let products = JSON.parse(localStorage.getItem('products') || '[]');
+    let categories = JSON.parse(localStorage.getItem('categories') || '[]');
     let editingProductId = null;
+    let editingCategoryId = null;
+
+    // Load categories for dropdown
+    function loadCategories() {
+      const select = document.getElementById('productCategory');
+      select.innerHTML = '<option value="">Select category</option>';
+      
+      categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+        select.appendChild(option);
+      });
+    }
+
+    // Load and display categories
+    function loadCategoriesList() {
+      const categoriesList = document.getElementById('categoriesList');
+      categoriesList.innerHTML = '';
+
+      if (categories.length === 0) {
+        categoriesList.innerHTML = '<p style="color: var(--text-light); padding: 0.5rem 0;">No categories yet. Click "Add Category" to create one.</p>';
+        return;
+      }
+
+      categories.forEach(category => {
+        const categoryBadge = document.createElement('div');
+        categoryBadge.style.cssText = `
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          background: white;
+          border-radius: 20px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        `;
+        categoryBadge.innerHTML = `
+          <span style="font-weight: 600;">${category.name}</span>
+          <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="editCategory('${category.id}')">Edit</button>
+          <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: var(--error);" onclick="deleteCategory('${category.id}')">Delete</button>
+        `;
+        categoriesList.appendChild(categoryBadge);
+      });
+    }
 
     // Load diseases for dropdown
     function loadDiseases() {
@@ -120,59 +212,130 @@
         return;
       }
 
-      // Group by disease
+      // Group by category first, then by disease
       const grouped = {};
       products.forEach(product => {
-        if (!grouped[product.disease]) grouped[product.disease] = [];
-        grouped[product.disease].push(product);
+        const categoryId = product.category || 'uncategorized';
+        if (!grouped[categoryId]) grouped[categoryId] = {};
+        const diseaseId = product.disease || 'unassigned';
+        if (!grouped[categoryId][diseaseId]) grouped[categoryId][diseaseId] = [];
+        grouped[categoryId][diseaseId].push(product);
       });
 
-      Object.keys(grouped).forEach(diseaseId => {
-        const diseaseName = getDiseaseName(diseaseId);
-        const diseaseProducts = grouped[diseaseId];
+      Object.keys(grouped).forEach(categoryId => {
+        const categoryName = getCategoryName(categoryId);
+        const categoryProducts = grouped[categoryId];
 
-        const diseaseSection = document.createElement('div');
-        diseaseSection.style.marginBottom = '2rem';
-        diseaseSection.innerHTML = `<h3 style="margin-bottom: 1rem; color: var(--primary-teal);">${diseaseName}</h3>`;
-        
-        const productsGrid = document.createElement('div');
-        productsGrid.className = 'service-grid';
-        productsGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+        const categorySection = document.createElement('div');
+        categorySection.style.marginBottom = '3rem';
+        categorySection.innerHTML = `<h2 style="margin-bottom: 1.5rem; color: var(--primary-teal); border-bottom: 2px solid var(--primary-teal); padding-bottom: 0.5rem;">${categoryName}</h2>`;
 
-        diseaseProducts.forEach(product => {
-          const productCard = document.createElement('div');
-          productCard.className = 'service-card';
+        Object.keys(categoryProducts).forEach(diseaseId => {
+          const diseaseName = getDiseaseName(diseaseId);
+          const diseaseProducts = categoryProducts[diseaseId];
+
+          const diseaseSection = document.createElement('div');
+          diseaseSection.style.marginBottom = '2rem';
+          diseaseSection.innerHTML = `<h3 style="margin-bottom: 1rem; color: var(--primary-teal); font-size: 1.1rem;">${diseaseName}</h3>`;
           
-          const paymentInfo = product.paymentType === 'subscription' 
-            ? `$${product.price}/month (${product.subscriptionMonths} months)`
-            : `$${product.price} (One-Time)`;
+          const productsGrid = document.createElement('div');
+          productsGrid.className = 'service-grid';
+          productsGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
 
-          productCard.innerHTML = `
-            <h3>${product.name}</h3>
-            <p style="font-size: 0.9rem; margin: 0.5rem 0;">${product.description || 'No description'}</p>
-            <div style="margin-top: 1rem; font-weight: 600; color: var(--primary-teal);">${paymentInfo}</div>
-            <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">
-              Type: ${product.paymentType === 'subscription' ? 'Subscription' : 'One-Time'}
-            </div>
-            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-              <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; flex: 1;" onclick="editProduct('${product.id}')">Edit</button>
-              <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; flex: 1; color: var(--error);" onclick="deleteProduct('${product.id}')">Delete</button>
-            </div>
-          `;
-          
-          productsGrid.appendChild(productCard);
+          diseaseProducts.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.className = 'service-card';
+            
+            const paymentInfo = product.paymentType === 'subscription' 
+              ? `$${product.price}/month (${product.subscriptionMonths} months)`
+              : `$${product.price} (One-Time)`;
+
+            productCard.innerHTML = `
+              <h3>${product.name}</h3>
+              <p style="font-size: 0.9rem; margin: 0.5rem 0;">${product.description || 'No description'}</p>
+              <div style="margin-top: 1rem; font-weight: 600; color: var(--primary-teal);">${paymentInfo}</div>
+              <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">
+                Type: ${product.paymentType === 'subscription' ? 'Subscription' : 'One-Time'}
+              </div>
+              <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; flex: 1;" onclick="editProduct('${product.id}')">Edit</button>
+                <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; flex: 1; color: var(--error);" onclick="deleteProduct('${product.id}')">Delete</button>
+              </div>
+            `;
+            
+            productsGrid.appendChild(productCard);
+          });
+
+          diseaseSection.appendChild(productsGrid);
+          categorySection.appendChild(diseaseSection);
         });
 
-        diseaseSection.appendChild(productsGrid);
-        productsList.appendChild(diseaseSection);
+        productsList.appendChild(categorySection);
       });
+    }
+
+    // Get category name by ID
+    function getCategoryName(categoryId) {
+      if (categoryId === 'uncategorized') return 'Uncategorized';
+      const category = categories.find(c => c.id === categoryId);
+      return category ? category.name : categoryId;
     }
 
     // Get disease name by ID
     function getDiseaseName(diseaseId) {
+      if (diseaseId === 'unassigned') return 'Unassigned';
       const diseases = JSON.parse(localStorage.getItem('diseases') || '[]');
       const disease = diseases.find(d => d.id === diseaseId);
       return disease ? disease.name : diseaseId;
+    }
+
+    // Show add category modal
+    function showAddCategoryModal() {
+      editingCategoryId = null;
+      document.getElementById('categoryModalTitle').textContent = 'Add New Category';
+      document.getElementById('categorySubmitBtn').textContent = 'Add Category';
+      document.getElementById('categoryForm').reset();
+      showModal('categoryModal');
+    }
+
+    // Edit category
+    function editCategory(categoryId) {
+      const category = categories.find(c => c.id === categoryId);
+      if (!category) return;
+
+      editingCategoryId = categoryId;
+      document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+      document.getElementById('categorySubmitBtn').textContent = 'Update Category';
+      
+      document.getElementById('categoryName').value = category.name;
+      document.getElementById('categoryDescription').value = category.description || '';
+
+      showModal('categoryModal');
+    }
+
+    // Delete category
+    function deleteCategory(categoryId) {
+      // Check if any products use this category
+      const productsUsingCategory = products.filter(p => p.category === categoryId);
+      if (productsUsingCategory.length > 0) {
+        if (!confirm(`This category is used by ${productsUsingCategory.length} product(s). Are you sure you want to delete it? Products will be moved to "Uncategorized".`)) return;
+        
+        // Remove category from products
+        products.forEach(product => {
+          if (product.category === categoryId) {
+            product.category = null;
+          }
+        });
+        saveProducts();
+        loadProducts();
+      } else {
+        if (!confirm('Are you sure you want to delete this category?')) return;
+      }
+      
+      categories = categories.filter(c => c.id !== categoryId);
+      saveCategories();
+      loadCategoriesList();
+      loadCategories();
     }
 
     // Show add product modal
@@ -182,6 +345,7 @@
       document.getElementById('submitBtn').textContent = 'Add Product';
       document.getElementById('productForm').reset();
       document.getElementById('subscriptionOptions').style.display = 'none';
+      loadCategories();
       loadDiseases();
       showModal('productModal');
     }
@@ -199,6 +363,9 @@
       document.getElementById('productDescription').value = product.description || '';
       document.getElementById('productPrice').value = product.price;
       document.getElementById('paymentType').value = product.paymentType;
+      
+      loadCategories();
+      document.getElementById('productCategory').value = product.category || '';
       
       loadDiseases();
       document.getElementById('productDisease').value = product.disease;
@@ -234,13 +401,37 @@
       }
     }
 
-    // Handle form submission
+    // Handle category form submission
+    document.getElementById('categoryForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const category = {
+        id: editingCategoryId || 'category-' + Date.now(),
+        name: document.getElementById('categoryName').value.trim(),
+        description: document.getElementById('categoryDescription').value.trim()
+      };
+
+      if (editingCategoryId) {
+        const index = categories.findIndex(c => c.id === editingCategoryId);
+        if (index !== -1) categories[index] = category;
+      } else {
+        categories.push(category);
+      }
+
+      saveCategories();
+      loadCategoriesList();
+      loadCategories();
+      closeModal('categoryModal');
+    });
+
+    // Handle product form submission
     document.getElementById('productForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
       const product = {
         id: editingProductId || 'product-' + Date.now(),
         name: document.getElementById('productName').value.trim(),
+        category: document.getElementById('productCategory').value || null,
         disease: document.getElementById('productDisease').value,
         description: document.getElementById('productDescription').value.trim(),
         price: parseFloat(document.getElementById('productPrice').value),
@@ -262,15 +453,23 @@
       closeModal('productModal');
     });
 
+    // Save categories
+    function saveCategories() {
+      localStorage.setItem('categories', JSON.stringify(categories));
+    }
+
     // Save products
     function saveProducts() {
       localStorage.setItem('products', JSON.stringify(products));
     }
 
     // Initialize
+    loadCategoriesList();
+    loadCategories();
     loadDiseases();
     loadProducts();
     setupModalClose('productModal');
+    setupModalClose('categoryModal');
   </script>
 </body>
 </html>
