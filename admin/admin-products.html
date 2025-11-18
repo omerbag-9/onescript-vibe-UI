@@ -53,7 +53,8 @@
   <div class="modal-overlay" id="productModal">
     <div class="modal" style="max-width: 600px;">
       <button class="modal-close" onclick="closeModal('productModal')">×</button>
-      <h2 id="modalTitle" style="margin-bottom: 1.5rem;">Add New Product</h2>
+      <h2 id="modalTitle" style="margin-bottom: 1.5rem;"></h2>
+      <div id="editModeIndicator" class="edit-mode-indicator" style="display: none;">You are editing a product</div>
       
       <form id="productForm">
         <div class="form-group">
@@ -115,7 +116,8 @@
   <div class="modal-overlay" id="categoryModal">
     <div class="modal" style="max-width: 500px;">
       <button class="modal-close" onclick="closeModal('categoryModal')">×</button>
-      <h2 id="categoryModalTitle" style="margin-bottom: 1.5rem;">Add New Category</h2>
+      <h2 id="categoryModalTitle" style="margin-bottom: 1.5rem;"></h2>
+      <div id="categoryEditModeIndicator" class="edit-mode-indicator" style="display: none;">You are editing a category</div>
       
       <form id="categoryForm">
         <div class="form-group">
@@ -202,7 +204,7 @@
               <span style="font-weight: 600; color: var(--text-dark);">${productCount}</span> product${productCount !== 1 ? 's' : ''}
             </div>
             <div style="display: flex; gap: 0.5rem;">
-              <button class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editCategory('${category.id}')">Edit</button>
+              <button class="btn-edit" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editCategory('${category.id}')">Edit</button>
               <button class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; color: var(--error); border-color: var(--error);" onclick="deleteCategory('${category.id}')">Delete</button>
             </div>
           </div>
@@ -283,8 +285,8 @@
                 Type: ${product.paymentType === 'subscription' ? 'Subscription' : 'One-Time'}
               </div>
               <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; flex: 1;" onclick="editProduct('${product.id}')">Edit</button>
-                <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; flex: 1; color: var(--error);" onclick="deleteProduct('${product.id}')">Delete</button>
+                <button class="btn-edit" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; flex: 1;" onclick="editProduct('${product.id}')">Edit</button>
+                <button class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; flex: 1; color: var(--error); border-color: var(--error);" onclick="deleteProduct('${product.id}')">Delete</button>
               </div>
             `;
             
@@ -319,6 +321,7 @@
       editingCategoryId = null;
       document.getElementById('categoryModalTitle').textContent = 'Add New Category';
       document.getElementById('categorySubmitBtn').textContent = 'Add Category';
+      document.getElementById('categoryEditModeIndicator').style.display = 'none';
       document.getElementById('categoryForm').reset();
       showModal('categoryModal');
     }
@@ -331,6 +334,7 @@
       editingCategoryId = categoryId;
       document.getElementById('categoryModalTitle').textContent = 'Edit Category';
       document.getElementById('categorySubmitBtn').textContent = 'Update Category';
+      document.getElementById('categoryEditModeIndicator').style.display = 'flex';
       
       document.getElementById('categoryName').value = category.name;
       document.getElementById('categoryDescription').value = category.description || '';
@@ -368,6 +372,7 @@
       editingProductId = null;
       document.getElementById('modalTitle').textContent = 'Add New Product';
       document.getElementById('submitBtn').textContent = 'Add Product';
+      document.getElementById('editModeIndicator').style.display = 'none';
       document.getElementById('productForm').reset();
       document.getElementById('subscriptionOptions').style.display = 'none';
       loadCategories();
@@ -383,6 +388,7 @@
       editingProductId = productId;
       document.getElementById('modalTitle').textContent = 'Edit Product';
       document.getElementById('submitBtn').textContent = 'Update Product';
+      document.getElementById('editModeIndicator').style.display = 'flex';
       
       document.getElementById('productName').value = product.name;
       document.getElementById('productDescription').value = product.description || '';

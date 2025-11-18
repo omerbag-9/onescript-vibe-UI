@@ -30,40 +30,49 @@
     <div class="card">
       <h2 style="margin-bottom: 1.5rem;">Existing Pharmacists</h2>
       
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Added Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="pharmacistsTableBody">
-          <tr>
-            <td>pharm.smith@example.com</td>
-            <td>Pharmacist</td>
-            <td><span class="badge badge-approved">Active & Verified</span></td>
-            <td>Jan 1, 2025</td>
-            <td><a href="#" class="link">Edit</a> | <a href="#" class="link" style="color: var(--error);">Remove</a></td>
-          </tr>
-          <tr>
-            <td>pharm.jones@example.com</td>
-            <td>Senior Pharmacist</td>
-            <td><span class="badge badge-approved">Active & Verified</span></td>
-            <td>Jan 5, 2025</td>
-            <td><a href="#" class="link">Edit</a> | <a href="#" class="link" style="color: var(--error);">Remove</a></td>
-          </tr>
-          <tr>
-            <td>pharm.brown@example.com</td>
-            <td>Pharmacist</td>
-            <td><span class="badge badge-pending">Invite Sent - Awaiting Response</span></td>
-            <td>Jan 10, 2025</td>
-            <td><a href="#" class="link">Edit</a> | <a href="#" class="link" style="color: var(--error);">Remove</a></td>
-          </tr>
-        </tbody>
-      </table>
+      <div id="pharmacistsList">
+        <!-- Pharmacists will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Pharmacist Modal -->
+  <div class="modal-overlay" id="pharmacistModal">
+    <div class="modal" style="max-width: 500px;">
+      <button class="modal-close" onclick="closeModal('pharmacistModal')">×</button>
+      <h2 id="modalTitle" style="margin-bottom: 1.5rem;"></h2>
+      <div id="editModeIndicator" class="edit-mode-indicator" style="display: none;">You are editing a pharmacist record</div>
+      
+      <form id="pharmacistForm">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="pharmacistEmailModal" placeholder="pharmacist@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-input" id="pharmacistRole" required>
+            <option value="">Select role</option>
+            <option value="Pharmacist">Pharmacist</option>
+            <option value="Senior Pharmacist">Senior Pharmacist</option>
+            <option value="Pharmacy Manager">Pharmacy Manager</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-input" id="pharmacistStatus" required>
+            <option value="active">Active & Verified</option>
+            <option value="pending">Invite Sent - Awaiting Response</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('pharmacistModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="submitBtn">Add Pharmacist</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -71,13 +80,185 @@
 
   <script src="../js/app.js"></script>
   <script>
+    let pharmacists = JSON.parse(localStorage.getItem('pharmacists') || '[]');
+    let editingPharmacistId = null;
+
+    // Initialize with default data if empty
+    if (pharmacists.length === 0) {
+      pharmacists = [
+        {
+          id: 'pharmacist-1',
+          email: 'pharm.smith@example.com',
+          role: 'Pharmacist',
+          status: 'active',
+          addedDate: '2025-01-01'
+        },
+        {
+          id: 'pharmacist-2',
+          email: 'pharm.jones@example.com',
+          role: 'Senior Pharmacist',
+          status: 'active',
+          addedDate: '2025-01-05'
+        },
+        {
+          id: 'pharmacist-3',
+          email: 'pharm.brown@example.com',
+          role: 'Pharmacist',
+          status: 'pending',
+          addedDate: '2025-01-10'
+        }
+      ];
+      savePharmacists();
+    }
+
+    // Load and display pharmacists
+    function loadPharmacists() {
+      const pharmacistsList = document.getElementById('pharmacistsList');
+      pharmacistsList.innerHTML = '';
+
+      if (pharmacists.length === 0) {
+        pharmacistsList.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No pharmacists added yet.</p>';
+        return;
+      }
+
+      const table = document.createElement('table');
+      table.className = 'table';
+      
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Added Date</th>
+          <th>Actions</th>
+        </tr>
+      `;
+      
+      const tbody = document.createElement('tbody');
+      pharmacists.forEach(pharmacist => {
+        const row = document.createElement('tr');
+        const statusClass = pharmacist.status === 'active' ? 'badge-approved' : 
+                           pharmacist.status === 'pending' ? 'badge-pending' : 'badge-rejected';
+        const statusText = pharmacist.status === 'active' ? 'Active & Verified' : 
+                          pharmacist.status === 'pending' ? 'Invite Sent - Awaiting Response' : 'Inactive';
+        
+        const addedDate = pharmacist.addedDate ? 
+          new Date(pharmacist.addedDate).toLocaleDateString() : 
+          new Date().toLocaleDateString();
+        
+        row.innerHTML = `
+          <td>${pharmacist.email}</td>
+          <td>${pharmacist.role}</td>
+          <td><span class="badge ${statusClass}">${statusText}</span></td>
+          <td>${addedDate}</td>
+          <td>
+            <div class="table-actions">
+              <a href="#" class="edit-link" onclick="editPharmacist('${pharmacist.id}'); return false;">Edit</a>
+              <span style="color: var(--border-light);">|</span>
+              <a href="#" class="link" style="color: var(--error);" onclick="deletePharmacist('${pharmacist.id}'); return false;">Remove</a>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+      
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      pharmacistsList.appendChild(table);
+    }
+
+    // Show add pharmacist modal
+    function showAddPharmacistModal() {
+      editingPharmacistId = null;
+      document.getElementById('modalTitle').textContent = 'Add New Pharmacist';
+      document.getElementById('submitBtn').textContent = 'Send Invitation';
+      document.getElementById('editModeIndicator').style.display = 'none';
+      document.getElementById('pharmacistForm').reset();
+      document.getElementById('pharmacistStatus').value = 'pending';
+      showModal('pharmacistModal');
+    }
+
+    // Edit pharmacist
+    function editPharmacist(pharmacistId) {
+      const pharmacist = pharmacists.find(p => p.id === pharmacistId);
+      if (!pharmacist) return;
+
+      editingPharmacistId = pharmacistId;
+      document.getElementById('modalTitle').textContent = 'Edit Pharmacist';
+      document.getElementById('submitBtn').textContent = 'Update Pharmacist';
+      document.getElementById('editModeIndicator').style.display = 'flex';
+      
+      document.getElementById('pharmacistEmailModal').value = pharmacist.email || '';
+      document.getElementById('pharmacistRole').value = pharmacist.role || '';
+      document.getElementById('pharmacistStatus').value = pharmacist.status || 'pending';
+
+      showModal('pharmacistModal');
+    }
+
+    // Delete pharmacist
+    function deletePharmacist(pharmacistId) {
+      if (!confirm('Are you sure you want to remove this pharmacist?')) return;
+      
+      pharmacists = pharmacists.filter(p => p.id !== pharmacistId);
+      savePharmacists();
+      loadPharmacists();
+    }
+
+    // Handle form submission
+    document.getElementById('pharmacistForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const pharmacist = {
+        id: editingPharmacistId || 'pharmacist-' + Date.now(),
+        email: document.getElementById('pharmacistEmailModal').value.trim(),
+        role: document.getElementById('pharmacistRole').value,
+        status: document.getElementById('pharmacistStatus').value,
+        addedDate: editingPharmacistId ? 
+          (pharmacists.find(p => p.id === editingPharmacistId)?.addedDate || new Date().toISOString().split('T')[0]) : 
+          new Date().toISOString().split('T')[0]
+      };
+
+      if (editingPharmacistId) {
+        const index = pharmacists.findIndex(p => p.id === editingPharmacistId);
+        if (index !== -1) pharmacists[index] = pharmacist;
+      } else {
+        pharmacists.push(pharmacist);
+      }
+
+      savePharmacists();
+      loadPharmacists();
+      closeModal('pharmacistModal');
+    });
+
+    // Handle add pharmacist form
     document.getElementById('addPharmacistForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const email = document.getElementById('pharmacistEmail').value;
       
-      alert(`Invitation sent to ${email}`);
+      const pharmacist = {
+        id: 'pharmacist-' + Date.now(),
+        email: email,
+        role: 'Pharmacist',
+        status: 'pending',
+        addedDate: new Date().toISOString().split('T')[0]
+      };
+
+      pharmacists.push(pharmacist);
+      savePharmacists();
+      loadPharmacists();
       this.reset();
+      showNotification(`Invitation sent to ${email}`, 'success');
     });
+
+    // Save pharmacists
+    function savePharmacists() {
+      localStorage.setItem('pharmacists', JSON.stringify(pharmacists));
+    }
+
+    // Initialize
+    loadPharmacists();
+    setupModalClose('pharmacistModal');
   </script>
 </body>
 </html>

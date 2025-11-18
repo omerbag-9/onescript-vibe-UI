@@ -30,50 +30,236 @@
     <div class="card">
       <h2 style="margin-bottom: 1.5rem;">Existing Doctors</h2>
       
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Added Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>dr.smith@example.com</td>
-            <td>Doctor</td>
-            <td><span class="badge badge-approved">Active & Verified</span></td>
-            <td>Jan 1, 2025</td>
-            <td><a href="#" class="link">Edit</a> | <a href="#" class="link" style="color: var(--error);">Remove</a></td>
-          </tr>
-          <tr>
-            <td>dr.jones@example.com</td>
-            <td>Senior Doctor</td>
-            <td><span class="badge badge-approved">Active & Verified</span></td>
-            <td>Jan 5, 2025</td>
-            <td><a href="#" class="link">Edit</a> | <a href="#" class="link" style="color: var(--error);">Remove</a></td>
-          </tr>
-          <tr>
-            <td>dr.brown@example.com</td>
-            <td>Doctor</td>
-            <td><span class="badge badge-pending">Invite Sent - Awaiting Response</span></td>
-            <td>Jan 10, 2025</td>
-            <td><a href="#" class="link">Edit</a> | <a href="#" class="link" style="color: var(--error);">Remove</a></td>
-          </tr>
-        </tbody>
-      </table>
+      <div id="doctorsList">
+        <!-- Doctors will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Doctor Modal -->
+  <div class="modal-overlay" id="doctorModal">
+    <div class="modal" style="max-width: 500px;">
+      <button class="modal-close" onclick="closeModal('doctorModal')">×</button>
+      <h2 id="modalTitle" style="margin-bottom: 1.5rem;"></h2>
+      <div id="editModeIndicator" class="edit-mode-indicator" style="display: none;">You are editing a doctor record</div>
+      
+      <form id="doctorForm">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="doctorEmail" placeholder="doctor@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-input" id="doctorRole" required>
+            <option value="">Select role</option>
+            <option value="Doctor">Doctor</option>
+            <option value="Senior Doctor">Senior Doctor</option>
+            <option value="Chief Medical Officer">Chief Medical Officer</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-input" id="doctorStatus" required>
+            <option value="active">Active & Verified</option>
+            <option value="pending">Invite Sent - Awaiting Response</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('doctorModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="submitBtn">Add Doctor</button>
+        </div>
+      </form>
     </div>
   </div>
 
   <div id="footer"></div>
 
-  <script>
-    fetch('../components/header.html').then(r => r.text()).then(html => document.getElementById('header').innerHTML = html);
-    fetch('../components/footer.html').then(r => r.text()).then(html => document.getElementById('footer').innerHTML = html);
-  </script>
   <script src="../js/app.js"></script>
+  <script>
+    let doctors = JSON.parse(localStorage.getItem('doctors') || '[]');
+    let editingDoctorId = null;
+
+    // Initialize with default data if empty
+    if (doctors.length === 0) {
+      doctors = [
+        {
+          id: 'doctor-1',
+          email: 'dr.smith@example.com',
+          role: 'Doctor',
+          status: 'active',
+          addedDate: '2025-01-01'
+        },
+        {
+          id: 'doctor-2',
+          email: 'dr.jones@example.com',
+          role: 'Senior Doctor',
+          status: 'active',
+          addedDate: '2025-01-05'
+        },
+        {
+          id: 'doctor-3',
+          email: 'dr.brown@example.com',
+          role: 'Doctor',
+          status: 'pending',
+          addedDate: '2025-01-10'
+        }
+      ];
+      saveDoctors();
+    }
+
+    // Load and display doctors
+    function loadDoctors() {
+      const doctorsList = document.getElementById('doctorsList');
+      doctorsList.innerHTML = '';
+
+      if (doctors.length === 0) {
+        doctorsList.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No doctors added yet.</p>';
+        return;
+      }
+
+      const table = document.createElement('table');
+      table.className = 'table';
+      
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Added Date</th>
+          <th>Actions</th>
+        </tr>
+      `;
+      
+      const tbody = document.createElement('tbody');
+      doctors.forEach(doctor => {
+        const row = document.createElement('tr');
+        const statusClass = doctor.status === 'active' ? 'badge-approved' : 
+                           doctor.status === 'pending' ? 'badge-pending' : 'badge-rejected';
+        const statusText = doctor.status === 'active' ? 'Active & Verified' : 
+                          doctor.status === 'pending' ? 'Invite Sent - Awaiting Response' : 'Inactive';
+        
+        const addedDate = doctor.addedDate ? 
+          new Date(doctor.addedDate).toLocaleDateString() : 
+          new Date().toLocaleDateString();
+        
+        row.innerHTML = `
+          <td>${doctor.email}</td>
+          <td>${doctor.role}</td>
+          <td><span class="badge ${statusClass}">${statusText}</span></td>
+          <td>${addedDate}</td>
+          <td>
+            <div class="table-actions">
+              <a href="#" class="edit-link" onclick="editDoctor('${doctor.id}'); return false;">Edit</a>
+              <span style="color: var(--border-light);">|</span>
+              <a href="#" class="link" style="color: var(--error);" onclick="deleteDoctor('${doctor.id}'); return false;">Remove</a>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+      
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      doctorsList.appendChild(table);
+    }
+
+    // Show add doctor modal
+    function showAddDoctorModal() {
+      editingDoctorId = null;
+      document.getElementById('modalTitle').textContent = 'Add New Doctor';
+      document.getElementById('submitBtn').textContent = 'Send Invitation';
+      document.getElementById('editModeIndicator').style.display = 'none';
+      document.getElementById('doctorForm').reset();
+      document.getElementById('doctorStatus').value = 'pending';
+      showModal('doctorModal');
+    }
+
+    // Edit doctor
+    function editDoctor(doctorId) {
+      const doctor = doctors.find(d => d.id === doctorId);
+      if (!doctor) return;
+
+      editingDoctorId = doctorId;
+      document.getElementById('modalTitle').textContent = 'Edit Doctor';
+      document.getElementById('submitBtn').textContent = 'Update Doctor';
+      document.getElementById('editModeIndicator').style.display = 'flex';
+      
+      document.getElementById('doctorEmail').value = doctor.email || '';
+      document.getElementById('doctorRole').value = doctor.role || '';
+      document.getElementById('doctorStatus').value = doctor.status || 'pending';
+
+      showModal('doctorModal');
+    }
+
+    // Delete doctor
+    function deleteDoctor(doctorId) {
+      if (!confirm('Are you sure you want to remove this doctor?')) return;
+      
+      doctors = doctors.filter(d => d.id !== doctorId);
+      saveDoctors();
+      loadDoctors();
+    }
+
+    // Handle form submission
+    document.getElementById('doctorForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const doctor = {
+        id: editingDoctorId || 'doctor-' + Date.now(),
+        email: document.getElementById('doctorEmail').value.trim(),
+        role: document.getElementById('doctorRole').value,
+        status: document.getElementById('doctorStatus').value,
+        addedDate: editingDoctorId ? 
+          (doctors.find(d => d.id === editingDoctorId)?.addedDate || new Date().toISOString().split('T')[0]) : 
+          new Date().toISOString().split('T')[0]
+      };
+
+      if (editingDoctorId) {
+        const index = doctors.findIndex(d => d.id === editingDoctorId);
+        if (index !== -1) doctors[index] = doctor;
+      } else {
+        doctors.push(doctor);
+      }
+
+      saveDoctors();
+      loadDoctors();
+      closeModal('doctorModal');
+    });
+
+    // Handle add doctor form
+    document.querySelector('form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.querySelector('input[type="email"]').value;
+      
+      const doctor = {
+        id: 'doctor-' + Date.now(),
+        email: email,
+        role: 'Doctor',
+        status: 'pending',
+        addedDate: new Date().toISOString().split('T')[0]
+      };
+
+      doctors.push(doctor);
+      saveDoctors();
+      loadDoctors();
+      this.reset();
+      showNotification(`Invitation sent to ${email}`, 'success');
+    });
+
+    // Save doctors
+    function saveDoctors() {
+      localStorage.setItem('doctors', JSON.stringify(doctors));
+    }
+
+    // Initialize
+    loadDoctors();
+    setupModalClose('doctorModal');
+  </script>
 </body>
 </html>
 

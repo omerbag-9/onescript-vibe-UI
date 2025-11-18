@@ -380,40 +380,7 @@ body {
   display: flex;
 }
 
-.modal {
-  background-color: var(--bg-white);
-  border-radius: 8px;
-  padding: 2rem;
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  position: relative;
-}
-
-.modal-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--text-light);
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s;
-}
-
-.modal-close:hover {
-  background-color: var(--bg-light);
-  color: var(--text-dark);
-}
+/* Modal base styles - enhanced below */
 
 .form-actions {
   display: flex;
@@ -655,6 +622,183 @@ body {
 
 .table tr:hover {
   background-color: #F9F9F9;
+}
+
+/* Edit Button Styles */
+.btn-edit {
+  background-color: transparent;
+  color: var(--primary-teal);
+  border: 1px solid var(--primary-teal);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-edit:hover {
+  background-color: var(--primary-teal);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 191, 165, 0.3);
+}
+
+.btn-edit:active {
+  transform: translateY(0);
+}
+
+.btn-edit-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+}
+
+.btn-edit-icon::before {
+  content: '✏️';
+  font-size: 0.9rem;
+}
+
+/* Edit Link Style (for table rows) */
+.edit-link {
+  color: var(--primary-teal);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.edit-link:hover {
+  background-color: rgba(0, 191, 165, 0.1);
+  text-decoration: none;
+}
+
+.edit-link::before {
+  content: '✏️';
+  font-size: 0.85rem;
+}
+
+/* Enhanced Modal Styles */
+.modal {
+  background-color: var(--bg-white);
+  border-radius: 12px;
+  padding: 2.5rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  position: relative;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal h2 {
+  color: var(--text-dark);
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal h2::before {
+  content: '✏️';
+  font-size: 1.5rem;
+}
+
+.modal-overlay.active {
+  animation: overlayFadeIn 0.3s ease;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: var(--bg-light);
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background-color: var(--error);
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* Form Input Focus States */
+.form-input:focus,
+.form-input:active {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(0, 191, 165, 0.1);
+}
+
+/* Action Buttons in Tables */
+.table-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.table-actions .edit-link {
+  margin: 0;
+}
+
+/* Edit Mode Indicator */
+.edit-mode-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #E3F2FD;
+  color: var(--primary-dark);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.edit-mode-indicator::before {
+  content: '✏️';
+  font-size: 1rem;
 }
 
 /* Utility */

@@ -79,7 +79,8 @@
   <div class="modal-overlay" id="addQuestionModal">
     <div class="modal" style="max-width: 600px;">
       <button class="modal-close" onclick="closeModal('addQuestionModal')">×</button>
-      <h2 style="margin-bottom: 1.5rem;">Add New Question</h2>
+      <h2 id="questionModalTitle" style="margin-bottom: 1.5rem;"></h2>
+      <div id="questionEditModeIndicator" class="edit-mode-indicator" style="display: none;">You are editing a question</div>
       
       <form id="addQuestionForm">
         <div class="form-group">
@@ -225,8 +226,8 @@
               ${optionsText}
             </div>
             <div style="display: flex; gap: 0.5rem;">
-              <button class="btn-secondary" style="padding: 0.5rem 1rem;" onclick="editQuestion('${question.id}')">Edit</button>
-              <button class="btn-secondary" style="padding: 0.5rem 1rem;" onclick="deleteQuestion('${question.id}')">Delete</button>
+              <button class="btn-edit" style="padding: 0.5rem 1rem;" onclick="editQuestion('${question.id}')">Edit</button>
+              <button class="btn-secondary" style="padding: 0.5rem 1rem; color: var(--error); border-color: var(--error);" onclick="deleteQuestion('${question.id}')">Delete</button>
             </div>
           </div>
         `;
@@ -253,12 +254,17 @@
       showModal('addDiseaseModal');
     }
 
+    let editingQuestionId = null;
+
     // Show add question modal
     function showAddQuestionModal() {
       if (!currentDisease) {
         alert('Please select a disease first');
         return;
       }
+      editingQuestionId = null;
+      document.getElementById('questionModalTitle').textContent = 'Add New Question';
+      document.getElementById('questionEditModeIndicator').style.display = 'none';
       document.getElementById('addQuestionForm').reset();
       document.getElementById('optionsSection').style.display = 'none';
       showModal('addQuestionModal');
@@ -325,17 +331,32 @@
         }
       }
 
-      const question = {
-        id: 'q' + Date.now(),
-        text: text,
-        type: type,
-        options: options
-      };
+      if (editingQuestionId) {
+        // Update existing question
+        const questionIndex = currentDisease.questions.findIndex(q => q.id === editingQuestionId);
+        if (questionIndex !== -1) {
+          currentDisease.questions[questionIndex] = {
+            id: editingQuestionId,
+            text: text,
+            type: type,
+            options: options
+          };
+        }
+      } else {
+        // Add new question
+        const question = {
+          id: 'q' + Date.now(),
+          text: text,
+          type: type,
+          options: options
+        };
+        currentDisease.questions.push(question);
+      }
 
-      currentDisease.questions.push(question);
       saveDiseases();
       loadQuestions();
       closeModal('addQuestionModal');
+      editingQuestionId = null;
     });
 
     // Delete disease
@@ -361,24 +382,23 @@
       loadQuestions();
     }
 
-    // Edit question (simplified - just delete and re-add for now)
+    // Edit question
     function editQuestion(questionId) {
       const question = currentDisease.questions.find(q => q.id === questionId);
       if (!question) return;
 
-      if (confirm('To edit, we will delete and recreate the question. Continue?')) {
-        deleteQuestion(questionId);
-        showAddQuestionModal();
-        // Pre-fill form (optional enhancement)
-        setTimeout(() => {
-          document.getElementById('questionText').value = question.text;
-          document.getElementById('questionType').value = question.type;
-          toggleQuestionOptions();
-          if (question.options.length > 0) {
-            document.getElementById('questionOptions').value = question.options.join('\n');
-          }
-        }, 100);
+      editingQuestionId = questionId;
+      document.getElementById('questionModalTitle').textContent = 'Edit Question';
+      document.getElementById('questionEditModeIndicator').style.display = 'flex';
+      
+      document.getElementById('questionText').value = question.text;
+      document.getElementById('questionType').value = question.type;
+      toggleQuestionOptions();
+      if (question.options.length > 0) {
+        document.getElementById('questionOptions').value = question.options.join('\n');
       }
+
+      showModal('addQuestionModal');
     }
 
     // Save diseases to localStorage
