@@ -138,8 +138,14 @@
             input.addEventListener('change', function() {
               answers[question.id] = option;
               saveAnswers();
+              // Check blocking first, then re-render
+              const wasBlocked = blockingReasons.length > 0;
+              checkBlockingConditions(true); // Show alert if blocked
               renderQuestions(); // Re-render to show/hide dependent questions
-              checkBlockingConditions();
+              // Re-check after rendering in case new questions have blocking conditions
+              if (!wasBlocked) {
+                checkBlockingConditions();
+              }
             });
             
             const label = document.createElement('label');
@@ -181,8 +187,14 @@
                 answers[question.id] = answers[question.id].filter(a => a !== option);
               }
               saveAnswers();
+              // Check blocking first, then re-render
+              const wasBlocked = blockingReasons.length > 0;
+              checkBlockingConditions(true); // Show alert if blocked
               renderQuestions();
-              checkBlockingConditions();
+              // Re-check after rendering
+              if (!wasBlocked) {
+                checkBlockingConditions();
+              }
             });
             
             const label = document.createElement('label');
@@ -207,6 +219,11 @@
             saveAnswers();
             checkBlockingConditions();
           });
+          
+          // Also check on blur for text inputs
+          input.addEventListener('blur', function() {
+            checkBlockingConditions(true);
+          });
           questionDiv.appendChild(input);
         } else if (question.type === 'textarea') {
           const textarea = document.createElement('textarea');
@@ -220,6 +237,11 @@
             saveAnswers();
             checkBlockingConditions();
           });
+          
+          // Also check on blur for textarea
+          textarea.addEventListener('blur', function() {
+            checkBlockingConditions(true);
+          });
           questionDiv.appendChild(textarea);
         }
 
@@ -230,45 +252,74 @@
     // Get visible questions based on dependencies
     function getVisibleQuestions() {
       const visible = [];
+      const processed = new Set();
       
+      // First pass: add questions with no dependencies
       allQuestions.forEach(question => {
-        // If question has no dependency, always show
         if (!question.dependsOn) {
           visible.push(question);
-          return;
-        }
-
-        // Check if dependency question is answered
-        const dependencyAnswer = answers[question.dependsOn];
-        if (!dependencyAnswer) {
-          return; // Don't show if dependency not answered
-        }
-
-        // Check if answer matches conditional requirements
-        if (question.conditionalAnswers && question.conditionalAnswers.length > 0) {
-          // For multiple-select, check if any selected answer matches
-          if (Array.isArray(dependencyAnswer)) {
-            const matches = dependencyAnswer.some(ans => question.conditionalAnswers.includes(ans));
-            if (matches) {
-              visible.push(question);
-            }
-          } else {
-            // For single answer, check if it matches
-            if (question.conditionalAnswers.includes(dependencyAnswer)) {
-              visible.push(question);
-            }
-          }
-        } else {
-          // If no conditional answers specified, show if dependency is answered
-          visible.push(question);
+          processed.add(question.id);
         }
       });
+      
+      // Second pass: add dependent questions if conditions are met
+      let changed = true;
+      while (changed) {
+        changed = false;
+        allQuestions.forEach(question => {
+          if (processed.has(question.id)) return;
+          
+          if (!question.dependsOn) {
+            if (!visible.find(q => q.id === question.id)) {
+              visible.push(question);
+              processed.add(question.id);
+              changed = true;
+            }
+            return;
+          }
 
+          // Check if dependency question is answered and visible
+          const dependencyQuestion = visible.find(q => q.id === question.dependsOn);
+          if (!dependencyQuestion) {
+            return; // Dependency not visible yet
+          }
+
+          const dependencyAnswer = answers[question.dependsOn];
+          if (!dependencyAnswer) {
+            return; // Don't show if dependency not answered
+          }
+
+          // Check if answer matches conditional requirements
+          let shouldShow = false;
+          if (question.conditionalAnswers && question.conditionalAnswers.length > 0) {
+            // For multiple-select, check if any selected answer matches
+            if (Array.isArray(dependencyAnswer)) {
+              shouldShow = dependencyAnswer.some(ans => question.conditionalAnswers.includes(ans));
+            } else {
+              // For single answer, check if it matches
+              shouldShow = question.conditionalAnswers.includes(dependencyAnswer);
+            }
+          } else {
+            // If no conditional answers specified, show if dependency is answered
+            shouldShow = true;
+          }
+
+          if (shouldShow && !visible.find(q => q.id === question.id)) {
+            visible.push(question);
+            processed.add(question.id);
+            changed = true;
+          }
+        });
+      }
+
+      // Sort visible questions by order
+      visible.sort((a, b) => (a.order || 999) - (b.order || 999));
+      
       return visible;
     }
 
     // Check blocking conditions
-    function checkBlockingConditions() {
+    function checkBlockingConditions(showAlert = false) {
       blockingReasons = [];
       
       allQuestions.forEach(question => {
@@ -280,15 +331,21 @@
           const answer = answers[condition.questionId];
           if (answer) {
             // Check if answer matches blocking condition
+            let isBlocked = false;
             if (Array.isArray(answer)) {
-              if (answer.includes(condition.answer)) {
-                const q = allQuestions.find(q => q.id === condition.questionId);
-                blockingReasons.push(`Your answer to "${q ? q.text : 'question'}" prevents you from proceeding.`);
-              }
+              isBlocked = answer.includes(condition.answer);
             } else {
-              if (answer === condition.answer) {
-                const q = allQuestions.find(q => q.id === condition.questionId);
-                blockingReasons.push(`Your answer to "${q ? q.text : 'question'}" prevents you from proceeding.`);
+              isBlocked = answer === condition.answer;
+            }
+            
+            if (isBlocked) {
+              const q = allQuestions.find(q => q.id === condition.questionId);
+              const reason = `Your answer "${condition.answer}" to "${q ? q.text : 'question'}" prevents you from proceeding with this assessment.`;
+              blockingReasons.push(reason);
+              
+              // Show alert if blocking condition is triggered
+              if (showAlert) {
+                alert(`⚠️ Cannot Proceed\n\n${reason}\n\nPlease contact a healthcare provider for further assistance.`);
               }
             }
           }
@@ -324,8 +381,10 @@
     document.getElementById('assessmentForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
+      // Final check for blocking conditions
+      checkBlockingConditions(true);
+      
       if (blockingReasons.length > 0) {
-        alert('You cannot proceed due to your answers. Please review the blocking conditions.');
         return;
       }
 
@@ -355,3 +414,4 @@
   </script>
 </body>
 </html>
+
