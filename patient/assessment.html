@@ -435,14 +435,19 @@
       window.location.href = 'product-selection.html';
     });
 
-    // Save progress
+    // Save progress - override the one from app.js for this page
     function saveAssessmentProgress() {
       saveAnswers();
       alert('Progress saved! You can continue later.');
     }
+    window.saveAssessmentProgress = saveAssessmentProgress;
 
     // Initialize
-    loadQuestions();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadQuestions);
+    } else {
+      loadQuestions();
+    }
   </script>
 </body>
 </html>

@@ -343,6 +343,7 @@
 
       showModal('categoryModal');
     }
+    window.editCategory = editCategory;
 
     // Delete category
     function deleteCategory(categoryId) {
@@ -368,6 +369,7 @@
       loadCategoriesList();
       loadCategories();
     }
+    window.deleteCategory = deleteCategory;
 
     // Show add product modal
     function showAddProductModal() {
@@ -381,6 +383,7 @@
       loadDiseases();
       showModal('productModal');
     }
+    window.showAddProductModal = showAddProductModal;
 
     // Edit product
     function editProduct(productId) {
@@ -419,6 +422,8 @@
       saveProducts();
       loadProducts();
     }
+    window.editProduct = editProduct;
+    window.deleteProduct = deleteProduct;
 
     // Toggle subscription options
     function toggleSubscriptionOptions() {
@@ -433,6 +438,7 @@
         document.getElementById('subscriptionMonths').required = false;
       }
     }
+    window.toggleSubscriptionOptions = toggleSubscriptionOptions;
 
     // Handle category form submission
     document.getElementById('categoryForm').addEventListener('submit', function(e) {
@@ -495,14 +501,6 @@
     function saveProducts() {
       localStorage.setItem('products', JSON.stringify(products));
     }
-
-    // Make all onclick functions globally accessible
-    window.editCategory = editCategory;
-    window.deleteCategory = deleteCategory;
-    window.showAddProductModal = showAddProductModal;
-    window.editProduct = editProduct;
-    window.deleteProduct = deleteProduct;
-    window.toggleSubscriptionOptions = toggleSubscriptionOptions;
 
     // Initialize
     if (document.readyState === 'loading') {
