@@ -111,8 +111,16 @@
 
         const label = document.createElement('label');
         label.className = 'question-label';
-        label.textContent = `${index + 1}. ${question.text}`;
+        label.textContent = `${index + 1}. ${question.text}${question.required !== false ? ' *' : ''}`;
         questionDiv.appendChild(label);
+        
+        // Add question description if it exists
+        if (question.description) {
+          const desc = document.createElement('p');
+          desc.style.cssText = 'font-size: 0.9rem; color: var(--text-light); margin: 0.25rem 0 0.75rem 0; font-style: italic;';
+          desc.textContent = question.description;
+          questionDiv.appendChild(desc);
+        }
 
         // Render based on question type
         if (question.type === 'multiple-choice' || question.type === 'yes-no') {
@@ -128,7 +136,7 @@
             input.name = question.id;
             input.id = `${question.id}-${optIndex}`;
             input.value = option;
-            input.required = true;
+            input.required = question.required !== false;
             
             // Set saved answer
             if (answers[question.id] === option) {

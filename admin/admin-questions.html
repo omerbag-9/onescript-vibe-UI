@@ -94,10 +94,25 @@
             <option value="">Select question type</option>
             <option value="multiple-choice">Multiple Choice (Single Selection)</option>
             <option value="multiple-select">Multiple Choice (Multiple Selection)</option>
-            <option value="text">Text Input</option>
-            <option value="textarea">Text Area</option>
             <option value="yes-no">Yes/No</option>
+            <option value="text">Text Input</option>
+            <option value="textarea">Text Area (Long Answer)</option>
+            <option value="number">Number Input</option>
+            <option value="date">Date Input</option>
+            <option value="rating">Rating Scale (1-10)</option>
           </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Question Description (Optional)</label>
+          <textarea class="form-input" id="questionDescription" rows="2" placeholder="Add helpful information or instructions for this question"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="questionRequired" checked style="width: auto; margin: 0;">
+            <span>This question is required</span>
+          </label>
         </div>
 
         <div id="optionsSection" style="display: none;">
@@ -108,6 +123,20 @@
           </div>
         </div>
 
+        <div class="form-group" id="validationSection" style="display: none;">
+          <label class="form-label">Validation Options</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+              <label style="font-size: 0.85rem; color: var(--text-light);">Minimum Value/Length</label>
+              <input type="number" class="form-input" id="validationMin" placeholder="e.g., 0">
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; color: var(--text-light);">Maximum Value/Length</label>
+              <input type="number" class="form-input" id="validationMax" placeholder="e.g., 100">
+            </div>
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="form-label">Question Order/Priority</label>
           <input type="number" class="form-input" id="questionOrder" placeholder="1" min="1" value="1">
@@ -115,12 +144,25 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Depends on Questions (Optional)</label>
+          <label class="form-label">Question Dependencies (Optional)</label>
+          <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem;">This question will only appear if the dependencies are met</p>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Dependency Logic:</label>
+            <select class="form-input" id="dependencyLogic" style="max-width: 300px;">
+              <option value="AND">Match ALL dependencies (AND)</option>
+              <option value="OR">Match ANY dependency (OR)</option>
+            </select>
+            <small style="color: var(--text-light); display: block; margin-top: 0.25rem;">
+              • AND: Question shows only when ALL dependencies are met<br>
+              • OR: Question shows when ANY dependency is met
+            </small>
+          </div>
+          
           <div id="dependenciesContainer">
             <!-- Dependencies will be added here -->
           </div>
           <button type="button" class="btn-secondary" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="addDependency()">+ Add Dependency</button>
-          <small style="color: var(--text-light); display: block; margin-top: 0.5rem;">This question will only show if ALL selected dependency questions are answered with the specified answers</small>
         </div>
 
         <div class="form-group">
@@ -274,12 +316,35 @@
             return '';
           }).filter(Boolean);
           
+          const logic = question.dependencyLogic || 'AND';
+          
           if (depTexts.length > 0) {
             dependencyText = `<div style="margin-top: 0.5rem; color: var(--primary-teal); font-size: 0.85rem;">
-              ⚡ Depends on: ${depTexts.join(' AND ')}
+              ⚡ Depends on (${logic}): ${depTexts.join(` <strong>${logic}</strong> `)}
             </div>`;
           }
         }
+        
+        let descriptionText = '';
+        if (question.description) {
+          descriptionText = `<div style="margin-top: 0.5rem; color: var(--text-light); font-style: italic; font-size: 0.9rem;">
+            "${question.description}"
+          </div>`;
+        }
+        
+        let validationText = '';
+        if (question.validation && Object.keys(question.validation).length > 0) {
+          const parts = [];
+          if (question.validation.min !== undefined) parts.push(`Min: ${question.validation.min}`);
+          if (question.validation.max !== undefined) parts.push(`Max: ${question.validation.max}`);
+          if (parts.length > 0) {
+            validationText = `<div style="margin-top: 0.5rem; color: var(--text-light); font-size: 0.85rem;">
+              📏 Validation: ${parts.join(', ')}
+            </div>`;
+          }
+        }
+        
+        const requiredBadge = question.required === false ? '<span style="color: var(--text-light); font-size: 0.85rem;">(Optional)</span>' : '<span style="color: var(--primary-teal); font-size: 0.85rem;">(Required)</span>';
 
         let blockingText = '';
         if (question.blockingConditions && question.blockingConditions.length > 0) {
@@ -294,8 +359,10 @@
         questionCard.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: start;">
             <div style="flex: 1;">
-              <strong>${index + 1}. ${question.text}</strong>
+              <strong>${index + 1}. ${question.text}</strong> ${requiredBadge}
+              ${descriptionText}
               ${optionsText}
+              ${validationText}
               ${dependencyText}
               ${blockingText}
               <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">
@@ -320,7 +387,10 @@
         'multiple-select': 'Multiple Choice (Multiple)',
         'text': 'Text Input',
         'textarea': 'Text Area',
-        'yes-no': 'Yes/No'
+        'yes-no': 'Yes/No',
+        'number': 'Number Input',
+        'date': 'Date Input',
+        'rating': 'Rating Scale (1-10)'
       };
       return labels[type] || type;
     }
@@ -368,12 +438,18 @@
         if (form) form.reset();
         const optionsSection = document.getElementById('optionsSection');
         if (optionsSection) optionsSection.style.display = 'none';
+        const validationSection = document.getElementById('validationSection');
+        if (validationSection) validationSection.style.display = 'none';
         const depsContainer = document.getElementById('dependenciesContainer');
         if (depsContainer) depsContainer.innerHTML = '';
         const blockingContainer = document.getElementById('blockingConditions');
         if (blockingContainer) blockingContainer.innerHTML = '';
         const orderInput = document.getElementById('questionOrder');
         if (orderInput) orderInput.value = (currentDisease.questions.length + 1).toString();
+        const dependencyLogic = document.getElementById('dependencyLogic');
+        if (dependencyLogic) dependencyLogic.value = 'AND';
+        const questionRequired = document.getElementById('questionRequired');
+        if (questionRequired) questionRequired.checked = true;
         
         if (typeof showModal === 'function') {
           console.log('✅ Using showModal function');
@@ -400,14 +476,28 @@
     function toggleQuestionOptions() {
       const questionType = document.getElementById('questionType').value;
       const optionsSection = document.getElementById('optionsSection');
+      const validationSection = document.getElementById('validationSection');
       
+      // Show options for choice-based questions
       if (questionType === 'multiple-choice' || questionType === 'multiple-select') {
         optionsSection.style.display = 'block';
+        validationSection.style.display = 'none';
+        document.getElementById('questionOptions').value = '';
       } else if (questionType === 'yes-no') {
         optionsSection.style.display = 'block';
+        validationSection.style.display = 'none';
         document.getElementById('questionOptions').value = 'Yes\nNo';
+      } else if (questionType === 'rating') {
+        optionsSection.style.display = 'none';
+        validationSection.style.display = 'none';
+        // Rating scale is always 1-10
+        document.getElementById('questionOptions').value = '';
+      } else if (questionType === 'number' || questionType === 'text' || questionType === 'textarea') {
+        optionsSection.style.display = 'none';
+        validationSection.style.display = 'block';
       } else {
         optionsSection.style.display = 'none';
+        validationSection.style.display = 'none';
       }
     }
 
@@ -629,8 +719,11 @@
 
           const text = document.getElementById('questionText').value.trim();
           const type = document.getElementById('questionType').value;
+          const description = document.getElementById('questionDescription').value.trim();
+          const required = document.getElementById('questionRequired').checked;
           const order = parseInt(document.getElementById('questionOrder').value) || 999;
           let options = [];
+          let validation = {};
 
           if (type === 'multiple-choice' || type === 'multiple-select' || type === 'yes-no') {
             const optionsText = document.getElementById('questionOptions').value.trim();
@@ -642,8 +735,17 @@
             }
           }
 
+          // Get validation options for text/number fields
+          if (type === 'number' || type === 'text' || type === 'textarea') {
+            const min = document.getElementById('validationMin').value;
+            const max = document.getElementById('validationMax').value;
+            if (min) validation.min = parseFloat(min);
+            if (max) validation.max = parseFloat(max);
+          }
+
           // Get dependencies (multiple)
           const dependencies = [];
+          const dependencyLogic = document.getElementById('dependencyLogic').value || 'AND';
           const dependencyDivs = document.querySelectorAll('#dependenciesContainer > div');
           dependencyDivs.forEach(div => {
             const questionSelect = div.querySelector('select:first-child');
@@ -674,9 +776,13 @@
             id: editingQuestionId || 'q' + Date.now(),
             text: text,
             type: type,
+            description: description || null,
+            required: required,
             options: options,
+            validation: Object.keys(validation).length > 0 ? validation : null,
             order: order,
             dependencies: dependencies.length > 0 ? dependencies : null,
+            dependencyLogic: dependencies.length > 1 ? dependencyLogic : 'AND',
             blockingConditions: blockingConditions
           };
 
@@ -757,10 +863,21 @@
       
       document.getElementById('questionText').value = question.text;
       document.getElementById('questionType').value = question.type;
+      document.getElementById('questionDescription').value = question.description || '';
+      document.getElementById('questionRequired').checked = question.required !== false;
       document.getElementById('questionOrder').value = question.order || 999;
+      document.getElementById('dependencyLogic').value = question.dependencyLogic || 'AND';
+      
       toggleQuestionOptions();
+      
       if (question.options && question.options.length > 0) {
         document.getElementById('questionOptions').value = question.options.join('\n');
+      }
+      
+      // Load validation options
+      if (question.validation) {
+        document.getElementById('validationMin').value = question.validation.min || '';
+        document.getElementById('validationMax').value = question.validation.max || '';
       }
 
       // Load dependencies
