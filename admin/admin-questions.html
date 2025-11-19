@@ -144,6 +144,12 @@
 
   <script src="../js/app.js"></script>
   <script>
+    // Make sure functions are globally accessible
+    window.showAddDiseaseModal = null;
+    window.showAddQuestionModal = null;
+    window.addDependency = null;
+    window.addBlockingCondition = null;
+    
     // Initialize diseases data (global scope)
     var diseases = JSON.parse(localStorage.getItem('diseases') || '[]');
     var currentDisease = null;
@@ -331,6 +337,7 @@
         alert('Error opening modal: ' + error.message);
       }
     }
+    window.showAddDiseaseModal = showAddDiseaseModal;
 
     // Show add question modal
     function showAddQuestionModal() {
@@ -365,6 +372,7 @@
         alert('Error opening modal: ' + error.message);
       }
     }
+    window.showAddQuestionModal = showAddQuestionModal;
 
     // Toggle question options based on type
     function toggleQuestionOptions() {
@@ -433,6 +441,7 @@
       dependencyDiv.appendChild(removeBtn);
       dependenciesContainer.appendChild(dependencyDiv);
     }
+    window.addDependency = addDependency;
 
     // Load dependencies for editing
     function loadDependencies(question) {
@@ -468,7 +477,7 @@
                 answerSelect.innerHTML += `<option value="${opt}" ${opt === dep.answer ? 'selected' : ''}>${opt}</option>`;
               });
             } else if (selectedQ && (selectedQ.type === 'text' || selectedQ.type === 'textarea')) {
-              answerSelect.innerHTML = '<option value="*" ${dep.answer === '*' ? 'selected' : ''}>Any answer</option>';
+              answerSelect.innerHTML = `<option value="*" ${dep.answer === '*' ? 'selected' : ''}>Any answer</option>`;
             }
           });
           
@@ -537,6 +546,7 @@
       conditionDiv.appendChild(removeBtn);
       blockingConditions.appendChild(conditionDiv);
     }
+    window.addBlockingCondition = addBlockingCondition;
 
     // Initialize event listeners function
     function initEventListeners() {
