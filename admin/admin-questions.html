@@ -189,6 +189,7 @@
     // Load and display diseases
     function loadDiseases() {
       const diseasesList = document.getElementById('diseasesList');
+      if (!diseasesList) return; // Element doesn't exist yet
       diseasesList.innerHTML = '';
 
       diseases.forEach(disease => {
@@ -505,111 +506,119 @@
       blockingConditions.appendChild(conditionDiv);
     }
 
+    // Initialize event listeners function
+    function initEventListeners() {
+      // Handle add disease form
+      const addDiseaseForm = document.getElementById('addDiseaseForm');
+      if (addDiseaseForm) {
+        addDiseaseForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const name = document.getElementById('diseaseName').value.trim();
+          const description = document.getElementById('diseaseDescription').value.trim();
+          const id = name.toLowerCase().replace(/\s+/g, '-');
 
-    // Handle add disease form
-    document.getElementById('addDiseaseForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const name = document.getElementById('diseaseName').value.trim();
-      const description = document.getElementById('diseaseDescription').value.trim();
-      const id = name.toLowerCase().replace(/\s+/g, '-');
+          if (diseases.find(d => d.id === id)) {
+            alert('This disease already exists!');
+            return;
+          }
 
-      if (diseases.find(d => d.id === id)) {
-        alert('This disease already exists!');
-        return;
-      }
-
-      diseases.push({
-        id: id,
-        name: name,
-        description: description,
-        questions: []
-      });
-
-      saveDiseases();
-      loadDiseases();
-      closeModal('addDiseaseModal');
-      alert(`"${name}" has been added successfully!`);
-    });
-
-    // Handle add question form
-    document.getElementById('addQuestionForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      if (!currentDisease) return;
-
-      const text = document.getElementById('questionText').value.trim();
-      const type = document.getElementById('questionType').value;
-      const order = parseInt(document.getElementById('questionOrder').value) || 999;
-      let options = [];
-
-      if (type === 'multiple-choice' || type === 'multiple-select' || type === 'yes-no') {
-        const optionsText = document.getElementById('questionOptions').value.trim();
-        options = optionsText.split('\n').map(o => o.trim()).filter(o => o.length > 0);
-        
-        if (options.length === 0) {
-          alert('Please provide at least one option');
-          return;
-        }
-      }
-
-      // Get dependencies (multiple)
-      const dependencies = [];
-      const dependencyDivs = document.querySelectorAll('#dependenciesContainer > div');
-      dependencyDivs.forEach(div => {
-        const questionSelect = div.querySelector('select:first-child');
-        const answerSelect = div.querySelector('select[name="dependencyAnswer"]');
-        if (questionSelect.value && answerSelect.value) {
-          dependencies.push({
-            questionId: questionSelect.value,
-            answer: answerSelect.value
+          diseases.push({
+            id: id,
+            name: name,
+            description: description,
+            questions: []
           });
-        }
-      });
 
-      // Get blocking conditions
-      const blockingConditions = [];
-      const blockingDivs = document.querySelectorAll('#blockingConditions > div');
-      blockingDivs.forEach(div => {
-        const questionSelect = div.querySelector('select:first-child');
-        const answerSelect = div.querySelector('select[name="blockingAnswer"]');
-        if (questionSelect.value && answerSelect.value) {
-          blockingConditions.push({
-            questionId: questionSelect.value,
-            answer: answerSelect.value
-          });
-        }
-      });
-
-      const question = {
-        id: editingQuestionId || 'q' + Date.now(),
-        text: text,
-        type: type,
-        options: options,
-        order: order,
-        dependencies: dependencies.length > 0 ? dependencies : null,
-        blockingConditions: blockingConditions
-      };
-
-      if (editingQuestionId) {
-        // Update existing question
-        const questionIndex = currentDisease.questions.findIndex(q => q.id === editingQuestionId);
-        if (questionIndex !== -1) {
-          currentDisease.questions[questionIndex] = question;
-        }
-      } else {
-        // Add new question
-        currentDisease.questions.push(question);
+          saveDiseases();
+          loadDiseases();
+          closeModal('addDiseaseModal');
+          alert(`"${name}" has been added successfully!`);
+        });
       }
 
-      // Sort questions by order
-      currentDisease.questions.sort((a, b) => (a.order || 999) - (b.order || 999));
+      // Handle add question form
+      const addQuestionForm = document.getElementById('addQuestionForm');
+      if (addQuestionForm) {
+        addQuestionForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          if (!currentDisease) return;
 
-      saveDiseases();
-      loadQuestions();
-      closeModal('addQuestionModal');
-      editingQuestionId = null;
-    });
+          const text = document.getElementById('questionText').value.trim();
+          const type = document.getElementById('questionType').value;
+          const order = parseInt(document.getElementById('questionOrder').value) || 999;
+          let options = [];
+
+          if (type === 'multiple-choice' || type === 'multiple-select' || type === 'yes-no') {
+            const optionsText = document.getElementById('questionOptions').value.trim();
+            options = optionsText.split('\n').map(o => o.trim()).filter(o => o.length > 0);
+            
+            if (options.length === 0) {
+              alert('Please provide at least one option');
+              return;
+            }
+          }
+
+          // Get dependencies (multiple)
+          const dependencies = [];
+          const dependencyDivs = document.querySelectorAll('#dependenciesContainer > div');
+          dependencyDivs.forEach(div => {
+            const questionSelect = div.querySelector('select:first-child');
+            const answerSelect = div.querySelector('select[name="dependencyAnswer"]');
+            if (questionSelect && answerSelect && questionSelect.value && answerSelect.value) {
+              dependencies.push({
+                questionId: questionSelect.value,
+                answer: answerSelect.value
+              });
+            }
+          });
+
+          // Get blocking conditions
+          const blockingConditions = [];
+          const blockingDivs = document.querySelectorAll('#blockingConditions > div');
+          blockingDivs.forEach(div => {
+            const questionSelect = div.querySelector('select:first-child');
+            const answerSelect = div.querySelector('select[name="blockingAnswer"]');
+            if (questionSelect && answerSelect && questionSelect.value && answerSelect.value) {
+              blockingConditions.push({
+                questionId: questionSelect.value,
+                answer: answerSelect.value
+              });
+            }
+          });
+
+          const question = {
+            id: editingQuestionId || 'q' + Date.now(),
+            text: text,
+            type: type,
+            options: options,
+            order: order,
+            dependencies: dependencies.length > 0 ? dependencies : null,
+            blockingConditions: blockingConditions
+          };
+
+          if (editingQuestionId) {
+            // Update existing question
+            const questionIndex = currentDisease.questions.findIndex(q => q.id === editingQuestionId);
+            if (questionIndex !== -1) {
+              currentDisease.questions[questionIndex] = question;
+            }
+          } else {
+            // Add new question
+            currentDisease.questions.push(question);
+          }
+
+          // Sort questions by order
+          currentDisease.questions.sort((a, b) => (a.order || 999) - (b.order || 999));
+
+          saveDiseases();
+          loadQuestions();
+          closeModal('addQuestionModal');
+          editingQuestionId = null;
+        });
+      }
+    }
 
     // Delete disease
     function deleteDisease(diseaseId) {
@@ -704,10 +713,24 @@
       showModal('addQuestionModal');
     }
 
-    // Initialize
-    loadDiseases();
-    setupModalClose('addDiseaseModal');
-    setupModalClose('addQuestionModal');
+    // Initialize - wait for DOM
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        initEventListeners();
+        loadDiseases();
+        if (typeof setupModalClose === 'function') {
+          setupModalClose('addDiseaseModal');
+          setupModalClose('addQuestionModal');
+        }
+      });
+    } else {
+      initEventListeners();
+      loadDiseases();
+      if (typeof setupModalClose === 'function') {
+        setupModalClose('addDiseaseModal');
+        setupModalClose('addQuestionModal');
+      }
+    }
   </script>
 </body>
 </html>
