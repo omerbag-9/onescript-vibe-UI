@@ -123,6 +123,7 @@ function showModal(modalId) {
     document.body.style.overflow = 'hidden';
   }
 }
+window.showModal = showModal;
 
 // Close modal
 function closeModal(modalId) {
@@ -132,6 +133,7 @@ function closeModal(modalId) {
     document.body.style.overflow = '';
   }
 }
+window.closeModal = closeModal;
 
 // Close modal on outside click
 function setupModalClose(modalId) {
@@ -176,6 +178,7 @@ function saveAssessmentProgress() {
     alert('Progress saved! You can continue later.');
   }
 }
+window.saveAssessmentProgress = saveAssessmentProgress;
 
 // Load saved assessment progress
 function loadAssessmentProgress() {

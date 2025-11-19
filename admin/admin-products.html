@@ -142,10 +142,11 @@
 
   <script src="../js/app.js"></script>
   <script>
-    let products = JSON.parse(localStorage.getItem('products') || '[]');
-    let categories = JSON.parse(localStorage.getItem('categories') || '[]');
-    let editingProductId = null;
-    let editingCategoryId = null;
+    // Make functions globally accessible
+    var products = JSON.parse(localStorage.getItem('products') || '[]');
+    var categories = JSON.parse(localStorage.getItem('categories') || '[]');
+    var editingProductId = null;
+    var editingCategoryId = null;
 
     // Load categories for dropdown
     function loadCategories() {
@@ -325,6 +326,7 @@
       document.getElementById('categoryForm').reset();
       showModal('categoryModal');
     }
+    window.showAddCategoryModal = showAddCategoryModal;
 
     // Edit category
     function editCategory(categoryId) {
@@ -494,13 +496,36 @@
       localStorage.setItem('products', JSON.stringify(products));
     }
 
+    // Make all onclick functions globally accessible
+    window.editCategory = editCategory;
+    window.deleteCategory = deleteCategory;
+    window.showAddProductModal = showAddProductModal;
+    window.editProduct = editProduct;
+    window.deleteProduct = deleteProduct;
+    window.toggleSubscriptionOptions = toggleSubscriptionOptions;
+
     // Initialize
-    loadCategoriesList();
-    loadCategories();
-    loadDiseases();
-    loadProducts();
-    setupModalClose('productModal');
-    setupModalClose('categoryModal');
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        loadCategoriesList();
+        loadCategories();
+        loadDiseases();
+        loadProducts();
+        if (typeof setupModalClose === 'function') {
+          setupModalClose('productModal');
+          setupModalClose('categoryModal');
+        }
+      });
+    } else {
+      loadCategoriesList();
+      loadCategories();
+      loadDiseases();
+      loadProducts();
+      if (typeof setupModalClose === 'function') {
+        setupModalClose('productModal');
+        setupModalClose('categoryModal');
+      }
+    }
   </script>
 </body>
 </html>

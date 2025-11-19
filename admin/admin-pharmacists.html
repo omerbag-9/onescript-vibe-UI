@@ -80,7 +80,7 @@
 
   <script src="../js/app.js"></script>
   <script>
-    let pharmacists = JSON.parse(localStorage.getItem('pharmacists') || '[]');
+    var pharmacists = JSON.parse(localStorage.getItem('pharmacists') || '[]');
     let editingPharmacistId = null;
 
     // Initialize with default data if empty
@@ -256,9 +256,25 @@
       localStorage.setItem('pharmacists', JSON.stringify(pharmacists));
     }
 
+    // Make all onclick functions globally accessible
+    window.showAddPharmacistModal = showAddPharmacistModal;
+    window.editPharmacist = editPharmacist;
+    window.deletePharmacist = deletePharmacist;
+
     // Initialize
-    loadPharmacists();
-    setupModalClose('pharmacistModal');
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        loadPharmacists();
+        if (typeof setupModalClose === 'function') {
+          setupModalClose('pharmacistModal');
+        }
+      });
+    } else {
+      loadPharmacists();
+      if (typeof setupModalClose === 'function') {
+        setupModalClose('pharmacistModal');
+      }
+    }
   </script>
 </body>
 </html>

@@ -80,7 +80,7 @@
 
   <script src="../js/app.js"></script>
   <script>
-    let doctors = JSON.parse(localStorage.getItem('doctors') || '[]');
+    var doctors = JSON.parse(localStorage.getItem('doctors') || '[]');
     let editingDoctorId = null;
 
     // Initialize with default data if empty
@@ -256,9 +256,25 @@
       localStorage.setItem('doctors', JSON.stringify(doctors));
     }
 
+    // Make all onclick functions globally accessible
+    window.showAddDoctorModal = showAddDoctorModal;
+    window.editDoctor = editDoctor;
+    window.deleteDoctor = deleteDoctor;
+
     // Initialize
-    loadDoctors();
-    setupModalClose('doctorModal');
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        loadDoctors();
+        if (typeof setupModalClose === 'function') {
+          setupModalClose('doctorModal');
+        }
+      });
+    } else {
+      loadDoctors();
+      if (typeof setupModalClose === 'function') {
+        setupModalClose('doctorModal');
+      }
+    }
   </script>
 </body>
 </html>

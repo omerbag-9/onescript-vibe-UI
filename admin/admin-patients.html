@@ -123,8 +123,8 @@
 
   <script src="../js/app.js"></script>
   <script>
-    let patients = JSON.parse(localStorage.getItem('patients') || '[]');
-    let editingPatientId = null;
+    var patients = JSON.parse(localStorage.getItem('patients') || '[]');
+    var editingPatientId = null;
     let allPatients = [];
 
     // Load and display patients
@@ -294,9 +294,25 @@
       localStorage.setItem('patients', JSON.stringify(patients));
     }
 
+    // Make all onclick functions globally accessible
+    window.showAddPatientModal = showAddPatientModal;
+    window.editPatient = editPatient;
+    window.deletePatient = deletePatient;
+
     // Initialize
-    loadPatients();
-    setupModalClose('patientModal');
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        loadPatients();
+        if (typeof setupModalClose === 'function') {
+          setupModalClose('patientModal');
+        }
+      });
+    } else {
+      loadPatients();
+      if (typeof setupModalClose === 'function') {
+        setupModalClose('patientModal');
+      }
+    }
   </script>
 </body>
 </html>

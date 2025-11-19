@@ -60,6 +60,7 @@
       cardElement.classList.add('selected');
       document.getElementById('continueBtn').disabled = false;
     }
+    window.selectService = selectService;
 
     // Continue to assessment
     function continueToAssessment() {
@@ -67,9 +68,14 @@
       sessionStorage.setItem('selectedDisease', selectedDiseaseId);
       window.location.href = `assessment.html?disease=${selectedDiseaseId}`;
     }
+    window.continueToAssessment = continueToAssessment;
 
     // Initialize
-    loadServices();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadServices);
+    } else {
+      loadServices();
+    }
   </script>
 </body>
 </html>
