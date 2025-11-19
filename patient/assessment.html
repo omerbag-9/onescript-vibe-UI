@@ -11,73 +11,16 @@
 
   <div class="container">
     <h1 class="page-title">Health Assessment</h1>
-    <p class="page-subtitle">Please answer the following questions related to Erectile Dysfunction</p>
+    <p class="page-subtitle" id="assessmentSubtitle">Please answer the following questions</p>
 
     <div class="card">
-      <form>
-        <div class="question-group">
-          <label class="question-label">1. How long have you been experiencing symptoms?</label>
-          <div class="checkbox-group">
-            <div class="checkbox-option">
-              <input type="radio" name="duration" id="duration1" value="less-than-1">
-              <label for="duration1">Less than 1 month</label>
-            </div>
-            <div class="checkbox-option">
-              <input type="radio" name="duration" id="duration2" value="1-3">
-              <label for="duration2">1-3 months</label>
-            </div>
-            <div class="checkbox-option">
-              <input type="radio" name="duration" id="duration3" value="3-6">
-              <label for="duration3">3-6 months</label>
-            </div>
-            <div class="checkbox-option">
-              <input type="radio" name="duration" id="duration4" value="more-than-6">
-              <label for="duration4">More than 6 months</label>
-            </div>
-          </div>
+      <form id="assessmentForm">
+        <div id="questionsContainer">
+          <!-- Questions will be loaded dynamically here -->
         </div>
 
-        <div class="question-group">
-          <label class="question-label">2. Do you have any existing medical conditions?</label>
-          <div class="checkbox-group">
-            <div class="checkbox-option">
-              <input type="checkbox" id="condition1" value="diabetes">
-              <label for="condition1">Diabetes</label>
-            </div>
-            <div class="checkbox-option">
-              <input type="checkbox" id="condition2" value="heart">
-              <label for="condition2">Heart Disease</label>
-            </div>
-            <div class="checkbox-option">
-              <input type="checkbox" id="condition3" value="hypertension">
-              <label for="condition3">Hypertension</label>
-            </div>
-            <div class="checkbox-option">
-              <input type="checkbox" id="condition4" value="none">
-              <label for="condition4">None</label>
-            </div>
-          </div>
-        </div>
-
-        <div class="question-group">
-          <label class="question-label">3. Are you currently taking any medications?</label>
-          <div class="form-group">
-            <textarea class="form-input" rows="3" placeholder="List any medications you are currently taking"></textarea>
-          </div>
-        </div>
-
-        <div class="question-group">
-          <label class="question-label">4. Have you tried any treatments before?</label>
-          <div class="checkbox-group">
-            <div class="checkbox-option">
-              <input type="radio" name="previous" id="previous1" value="yes">
-              <label for="previous1">Yes</label>
-            </div>
-            <div class="checkbox-option">
-              <input type="radio" name="previous" id="previous2" value="no">
-              <label for="previous2">No</label>
-            </div>
-          </div>
+        <div id="blockingMessage" class="info-box" style="display: none; background-color: #FFEBEE; border-left: 4px solid var(--error);">
+          <p style="color: var(--error); margin: 0;"><strong>⚠️ Unable to Proceed:</strong> <span id="blockingMessageText"></span></p>
         </div>
 
         <div class="info-box">
@@ -86,7 +29,7 @@
 
         <div class="form-actions">
           <button type="button" class="btn-secondary" onclick="saveAssessmentProgress()">Save Progress</button>
-          <button type="submit" class="btn-primary">Continue to Product Selection →</button>
+          <button type="submit" class="btn-primary" id="submitBtn">Continue to Product Selection →</button>
         </div>
       </form>
     </div>
@@ -96,12 +39,319 @@
 
   <script src="../js/app.js"></script>
   <script>
-    // Load saved progress on page load
-    loadAssessmentProgress();
-    
-    // Set form redirect
-    document.querySelector('form').setAttribute('data-redirect', 'product-selection.html');
+    let currentDisease = null;
+    let allQuestions = [];
+    let answers = {};
+    let blockingReasons = [];
+
+    // Get disease from URL or sessionStorage
+    function getSelectedDisease() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const diseaseId = urlParams.get('disease') || sessionStorage.getItem('selectedDisease');
+      
+      if (!diseaseId) {
+        // Default to first disease or redirect
+        const diseases = JSON.parse(localStorage.getItem('diseases') || '[]');
+        if (diseases.length > 0) {
+          return diseases[0].id;
+        }
+        return null;
+      }
+      return diseaseId;
+    }
+
+    // Load questions for selected disease
+    function loadQuestions() {
+      const diseaseId = getSelectedDisease();
+      if (!diseaseId) {
+        document.getElementById('questionsContainer').innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No assessment available. Please select a service first.</p>';
+        return;
+      }
+
+      const diseases = JSON.parse(localStorage.getItem('diseases') || '[]');
+      currentDisease = diseases.find(d => d.id === diseaseId);
+      
+      if (!currentDisease || !currentDisease.questions || currentDisease.questions.length === 0) {
+        document.getElementById('questionsContainer').innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No questions available for this condition.</p>';
+        return;
+      }
+
+      document.getElementById('assessmentSubtitle').textContent = `Please answer the following questions related to ${currentDisease.name}`;
+      
+      // Sort questions by order
+      allQuestions = [...currentDisease.questions].sort((a, b) => (a.order || 999) - (b.order || 999));
+      
+      // Load saved answers
+      const saved = localStorage.getItem(`assessment_${diseaseId}`);
+      if (saved) {
+        answers = JSON.parse(saved);
+      }
+
+      renderQuestions();
+      checkBlockingConditions();
+    }
+
+    // Render questions based on current answers
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+
+      const visibleQuestions = getVisibleQuestions();
+
+      if (visibleQuestions.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No questions to display.</p>';
+        return;
+      }
+
+      visibleQuestions.forEach((question, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question-group';
+        questionDiv.id = `question-${question.id}`;
+        questionDiv.dataset.questionId = question.id;
+
+        const label = document.createElement('label');
+        label.className = 'question-label';
+        label.textContent = `${index + 1}. ${question.text}`;
+        questionDiv.appendChild(label);
+
+        // Render based on question type
+        if (question.type === 'multiple-choice' || question.type === 'yes-no') {
+          const checkboxGroup = document.createElement('div');
+          checkboxGroup.className = 'checkbox-group';
+          
+          question.options.forEach((option, optIndex) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'checkbox-option';
+            
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = question.id;
+            input.id = `${question.id}-${optIndex}`;
+            input.value = option;
+            input.required = true;
+            
+            // Set saved answer
+            if (answers[question.id] === option) {
+              input.checked = true;
+            }
+            
+            input.addEventListener('change', function() {
+              answers[question.id] = option;
+              saveAnswers();
+              renderQuestions(); // Re-render to show/hide dependent questions
+              checkBlockingConditions();
+            });
+            
+            const label = document.createElement('label');
+            label.htmlFor = input.id;
+            label.textContent = option;
+            
+            optionDiv.appendChild(input);
+            optionDiv.appendChild(label);
+            checkboxGroup.appendChild(optionDiv);
+          });
+          
+          questionDiv.appendChild(checkboxGroup);
+        } else if (question.type === 'multiple-select') {
+          const checkboxGroup = document.createElement('div');
+          checkboxGroup.className = 'checkbox-group';
+          
+          question.options.forEach((option, optIndex) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'checkbox-option';
+            
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.id = `${question.id}-${optIndex}`;
+            input.value = option;
+            input.name = `${question.id}[]`;
+            
+            // Set saved answer
+            if (answers[question.id] && Array.isArray(answers[question.id]) && answers[question.id].includes(option)) {
+              input.checked = true;
+            }
+            
+            input.addEventListener('change', function() {
+              if (!answers[question.id]) answers[question.id] = [];
+              if (input.checked) {
+                if (!answers[question.id].includes(option)) {
+                  answers[question.id].push(option);
+                }
+              } else {
+                answers[question.id] = answers[question.id].filter(a => a !== option);
+              }
+              saveAnswers();
+              renderQuestions();
+              checkBlockingConditions();
+            });
+            
+            const label = document.createElement('label');
+            label.htmlFor = input.id;
+            label.textContent = option;
+            
+            optionDiv.appendChild(input);
+            optionDiv.appendChild(label);
+            checkboxGroup.appendChild(optionDiv);
+          });
+          
+          questionDiv.appendChild(checkboxGroup);
+        } else if (question.type === 'text') {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'form-input';
+          input.name = question.id;
+          input.required = true;
+          input.value = answers[question.id] || '';
+          input.addEventListener('input', function() {
+            answers[question.id] = input.value;
+            saveAnswers();
+            checkBlockingConditions();
+          });
+          questionDiv.appendChild(input);
+        } else if (question.type === 'textarea') {
+          const textarea = document.createElement('textarea');
+          textarea.className = 'form-input';
+          textarea.rows = 3;
+          textarea.name = question.id;
+          textarea.required = true;
+          textarea.value = answers[question.id] || '';
+          textarea.addEventListener('input', function() {
+            answers[question.id] = textarea.value;
+            saveAnswers();
+            checkBlockingConditions();
+          });
+          questionDiv.appendChild(textarea);
+        }
+
+        container.appendChild(questionDiv);
+      });
+    }
+
+    // Get visible questions based on dependencies
+    function getVisibleQuestions() {
+      const visible = [];
+      
+      allQuestions.forEach(question => {
+        // If question has no dependency, always show
+        if (!question.dependsOn) {
+          visible.push(question);
+          return;
+        }
+
+        // Check if dependency question is answered
+        const dependencyAnswer = answers[question.dependsOn];
+        if (!dependencyAnswer) {
+          return; // Don't show if dependency not answered
+        }
+
+        // Check if answer matches conditional requirements
+        if (question.conditionalAnswers && question.conditionalAnswers.length > 0) {
+          // For multiple-select, check if any selected answer matches
+          if (Array.isArray(dependencyAnswer)) {
+            const matches = dependencyAnswer.some(ans => question.conditionalAnswers.includes(ans));
+            if (matches) {
+              visible.push(question);
+            }
+          } else {
+            // For single answer, check if it matches
+            if (question.conditionalAnswers.includes(dependencyAnswer)) {
+              visible.push(question);
+            }
+          }
+        } else {
+          // If no conditional answers specified, show if dependency is answered
+          visible.push(question);
+        }
+      });
+
+      return visible;
+    }
+
+    // Check blocking conditions
+    function checkBlockingConditions() {
+      blockingReasons = [];
+      
+      allQuestions.forEach(question => {
+        if (!question.blockingConditions || question.blockingConditions.length === 0) {
+          return;
+        }
+
+        question.blockingConditions.forEach(condition => {
+          const answer = answers[condition.questionId];
+          if (answer) {
+            // Check if answer matches blocking condition
+            if (Array.isArray(answer)) {
+              if (answer.includes(condition.answer)) {
+                const q = allQuestions.find(q => q.id === condition.questionId);
+                blockingReasons.push(`Your answer to "${q ? q.text : 'question'}" prevents you from proceeding.`);
+              }
+            } else {
+              if (answer === condition.answer) {
+                const q = allQuestions.find(q => q.id === condition.questionId);
+                blockingReasons.push(`Your answer to "${q ? q.text : 'question'}" prevents you from proceeding.`);
+              }
+            }
+          }
+        });
+      });
+
+      const blockingDiv = document.getElementById('blockingMessage');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      if (blockingReasons.length > 0) {
+        blockingDiv.style.display = 'block';
+        document.getElementById('blockingMessageText').textContent = blockingReasons.join(' ');
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+      } else {
+        blockingDiv.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+      }
+    }
+
+    // Save answers
+    function saveAnswers() {
+      const diseaseId = getSelectedDisease();
+      if (diseaseId) {
+        localStorage.setItem(`assessment_${diseaseId}`, JSON.stringify(answers));
+      }
+    }
+
+    // Handle form submission
+    document.getElementById('assessmentForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      if (blockingReasons.length > 0) {
+        alert('You cannot proceed due to your answers. Please review the blocking conditions.');
+        return;
+      }
+
+      // Save final answers
+      const diseaseId = getSelectedDisease();
+      if (diseaseId) {
+        localStorage.setItem(`assessment_${diseaseId}`, JSON.stringify(answers));
+        localStorage.setItem('lastAssessment', JSON.stringify({
+          diseaseId: diseaseId,
+          answers: answers,
+          timestamp: new Date().toISOString()
+        }));
+      }
+
+      // Redirect to product selection
+      window.location.href = 'product-selection.html';
+    });
+
+    // Save progress
+    function saveAssessmentProgress() {
+      saveAnswers();
+      alert('Progress saved! You can continue later.');
+    }
+
+    // Initialize
+    loadQuestions();
   </script>
 </body>
 </html>
-

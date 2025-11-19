@@ -16,7 +16,7 @@
     <p class="page-subtitle">Add new diseases and manage assessment questions for each condition</p>
 
     <!-- Add New Disease Card -->
-    <div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 100%);">
+    <div class="card" style="margin-bottom: 2rem;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
           <h2 style="margin-bottom: 0.5rem;">Add New Disease/Condition</h2>
@@ -106,6 +106,40 @@
             <textarea class="form-input" id="questionOptions" rows="5" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
             <small style="color: var(--text-light);">Enter each option on a new line</small>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Question Order/Priority</label>
+          <input type="number" class="form-input" id="questionOrder" placeholder="1" min="1" value="1">
+          <small style="color: var(--text-light);">Lower numbers appear first (1 = first question)</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Depends on Question (Optional)</label>
+          <select class="form-input" id="dependsOnQuestion" onchange="toggleConditionalLogic()">
+            <option value="">No dependency - Always show</option>
+            <!-- Options will be populated dynamically -->
+          </select>
+          <small style="color: var(--text-light);">This question will only show if the selected question is answered</small>
+        </div>
+
+        <div id="conditionalLogicSection" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">Show this question only if dependency question has answer:</label>
+            <div id="conditionalOptions">
+              <!-- Options will be populated dynamically based on selected question -->
+            </div>
+            <small style="color: var(--text-light);">Select which answer(s) trigger this question to appear</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Blocking Conditions (Optional)</label>
+          <div id="blockingConditions">
+            <!-- Will be populated dynamically -->
+          </div>
+          <button type="button" class="btn-secondary" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="addBlockingCondition()">+ Add Blocking Condition</button>
+          <small style="color: var(--text-light); display: block; margin-top: 0.5rem;">If user selects these answers, they cannot proceed to product selection</small>
         </div>
 
         <div class="form-actions">
@@ -219,11 +253,36 @@
           </div>`;
         }
 
+        let dependencyText = '';
+        if (question.dependsOn) {
+          const depQuestion = currentDisease.questions.find(q => q.id === question.dependsOn);
+          if (depQuestion) {
+            dependencyText = `<div style="margin-top: 0.5rem; color: var(--primary-teal); font-size: 0.85rem;">
+              ⚡ Depends on: "${depQuestion.text}" ${question.conditionalAnswers ? `(if: ${question.conditionalAnswers.join(', ')})` : ''}
+            </div>`;
+          }
+        }
+
+        let blockingText = '';
+        if (question.blockingConditions && question.blockingConditions.length > 0) {
+          blockingText = `<div style="margin-top: 0.5rem; color: var(--error); font-size: 0.85rem;">
+            🚫 Blocks progression if: ${question.blockingConditions.map(bc => {
+              const q = currentDisease.questions.find(q => q.id === bc.questionId);
+              return q ? `"${q.text}" = "${bc.answer}"` : '';
+            }).filter(Boolean).join(', ')}
+          </div>`;
+        }
+
         questionCard.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: start;">
             <div style="flex: 1;">
               <strong>${index + 1}. ${question.text}</strong>
               ${optionsText}
+              ${dependencyText}
+              ${blockingText}
+              <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">
+                Order: ${question.order || 999}
+              </div>
             </div>
             <div style="display: flex; gap: 0.5rem;">
               <button class="btn-edit" style="padding: 0.5rem 1rem;" onclick="editQuestion('${question.id}')">Edit</button>
@@ -267,6 +326,10 @@
       document.getElementById('questionEditModeIndicator').style.display = 'none';
       document.getElementById('addQuestionForm').reset();
       document.getElementById('optionsSection').style.display = 'none';
+      document.getElementById('conditionalLogicSection').style.display = 'none';
+      document.getElementById('blockingConditions').innerHTML = '';
+      document.getElementById('questionOrder').value = (currentDisease.questions.length + 1).toString();
+      loadDependencyQuestions();
       showModal('addQuestionModal');
     }
 
@@ -283,6 +346,99 @@
       } else {
         optionsSection.style.display = 'none';
       }
+    }
+
+    // Toggle conditional logic section
+    function toggleConditionalLogic() {
+      const dependsOn = document.getElementById('dependsOnQuestion').value;
+      const conditionalSection = document.getElementById('conditionalLogicSection');
+      
+      if (!dependsOn || !currentDisease) {
+        conditionalSection.style.display = 'none';
+        return;
+      }
+
+      const dependencyQuestion = currentDisease.questions.find(q => q.id === dependsOn);
+      if (!dependencyQuestion || !dependencyQuestion.options || dependencyQuestion.options.length === 0) {
+        conditionalSection.style.display = 'none';
+        return;
+      }
+
+      conditionalSection.style.display = 'block';
+      const conditionalOptions = document.getElementById('conditionalOptions');
+      conditionalOptions.innerHTML = '';
+
+      dependencyQuestion.options.forEach((option, index) => {
+        const checkbox = document.createElement('div');
+        checkbox.className = 'checkbox-option';
+        checkbox.innerHTML = `
+          <input type="checkbox" id="cond-opt-${index}" value="${option}" name="conditionalOptions">
+          <label for="cond-opt-${index}">${option}</label>
+        `;
+        conditionalOptions.appendChild(checkbox);
+      });
+    }
+
+    // Add blocking condition
+    function addBlockingCondition() {
+      if (!currentDisease || currentDisease.questions.length === 0) {
+        alert('Please add questions first before setting blocking conditions');
+        return;
+      }
+
+      const blockingConditions = document.getElementById('blockingConditions');
+      const conditionDiv = document.createElement('div');
+      conditionDiv.style.cssText = 'display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-light); border-radius: 4px;';
+      
+      const questionSelect = document.createElement('select');
+      questionSelect.className = 'form-input';
+      questionSelect.style.flex = '1';
+      questionSelect.innerHTML = '<option value="">Select question</option>';
+      currentDisease.questions.forEach(q => {
+        questionSelect.innerHTML += `<option value="${q.id}">${q.text}</option>`;
+      });
+      
+      const answerSelect = document.createElement('select');
+      answerSelect.className = 'form-input';
+      answerSelect.style.flex = '1';
+      answerSelect.innerHTML = '<option value="">Select answer</option>';
+      answerSelect.name = 'blockingAnswer';
+      
+      questionSelect.addEventListener('change', function() {
+        const selectedQ = currentDisease.questions.find(q => q.id === this.value);
+        answerSelect.innerHTML = '<option value="">Select answer</option>';
+        if (selectedQ && selectedQ.options) {
+          selectedQ.options.forEach(opt => {
+            answerSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
+          });
+        }
+      });
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn-secondary';
+      removeBtn.textContent = 'Remove';
+      removeBtn.style.padding = '0.5rem 1rem';
+      removeBtn.onclick = () => conditionDiv.remove();
+      
+      conditionDiv.appendChild(questionSelect);
+      conditionDiv.appendChild(answerSelect);
+      conditionDiv.appendChild(removeBtn);
+      blockingConditions.appendChild(conditionDiv);
+    }
+
+    // Load dependency questions dropdown
+    function loadDependencyQuestions() {
+      if (!currentDisease) return;
+      
+      const dependsOnSelect = document.getElementById('dependsOnQuestion');
+      dependsOnSelect.innerHTML = '<option value="">No dependency - Always show</option>';
+      
+      currentDisease.questions.forEach(q => {
+        if (q.id !== editingQuestionId) {
+          dependsOnSelect.innerHTML += `<option value="${q.id}">${q.text}</option>`;
+        }
+      });
     }
 
     // Handle add disease form
@@ -319,6 +475,7 @@
 
       const text = document.getElementById('questionText').value.trim();
       const type = document.getElementById('questionType').value;
+      const order = parseInt(document.getElementById('questionOrder').value) || 999;
       let options = [];
 
       if (type === 'multiple-choice' || type === 'multiple-select' || type === 'yes-no') {
@@ -331,27 +488,52 @@
         }
       }
 
+      // Get dependency info
+      const dependsOn = document.getElementById('dependsOnQuestion').value;
+      let conditionalAnswers = [];
+      if (dependsOn) {
+        const conditionalCheckboxes = document.querySelectorAll('#conditionalOptions input[type="checkbox"]:checked');
+        conditionalAnswers = Array.from(conditionalCheckboxes).map(cb => cb.value);
+      }
+
+      // Get blocking conditions
+      const blockingConditions = [];
+      const blockingDivs = document.querySelectorAll('#blockingConditions > div');
+      blockingDivs.forEach(div => {
+        const questionSelect = div.querySelector('select:first-child');
+        const answerSelect = div.querySelector('select[name="blockingAnswer"]');
+        if (questionSelect.value && answerSelect.value) {
+          blockingConditions.push({
+            questionId: questionSelect.value,
+            answer: answerSelect.value
+          });
+        }
+      });
+
+      const question = {
+        id: editingQuestionId || 'q' + Date.now(),
+        text: text,
+        type: type,
+        options: options,
+        order: order,
+        dependsOn: dependsOn || null,
+        conditionalAnswers: conditionalAnswers,
+        blockingConditions: blockingConditions
+      };
+
       if (editingQuestionId) {
         // Update existing question
         const questionIndex = currentDisease.questions.findIndex(q => q.id === editingQuestionId);
         if (questionIndex !== -1) {
-          currentDisease.questions[questionIndex] = {
-            id: editingQuestionId,
-            text: text,
-            type: type,
-            options: options
-          };
+          currentDisease.questions[questionIndex] = question;
         }
       } else {
         // Add new question
-        const question = {
-          id: 'q' + Date.now(),
-          text: text,
-          type: type,
-          options: options
-        };
         currentDisease.questions.push(question);
       }
+
+      // Sort questions by order
+      currentDisease.questions.sort((a, b) => (a.order || 999) - (b.order || 999));
 
       saveDiseases();
       loadQuestions();
@@ -393,9 +575,73 @@
       
       document.getElementById('questionText').value = question.text;
       document.getElementById('questionType').value = question.type;
+      document.getElementById('questionOrder').value = question.order || 999;
       toggleQuestionOptions();
-      if (question.options.length > 0) {
+      if (question.options && question.options.length > 0) {
         document.getElementById('questionOptions').value = question.options.join('\n');
+      }
+
+      // Load dependency
+      loadDependencyQuestions();
+      if (question.dependsOn) {
+        document.getElementById('dependsOnQuestion').value = question.dependsOn;
+        toggleConditionalLogic();
+        // Set conditional answers
+        if (question.conditionalAnswers) {
+          setTimeout(() => {
+            question.conditionalAnswers.forEach(answer => {
+              const checkbox = document.querySelector(`#conditionalOptions input[value="${answer}"]`);
+              if (checkbox) checkbox.checked = true;
+            });
+          }, 100);
+        }
+      }
+
+      // Load blocking conditions
+      document.getElementById('blockingConditions').innerHTML = '';
+      if (question.blockingConditions && question.blockingConditions.length > 0) {
+        question.blockingConditions.forEach(condition => {
+          const conditionDiv = document.createElement('div');
+          conditionDiv.style.cssText = 'display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-light); border-radius: 4px;';
+          
+          const questionSelect = document.createElement('select');
+          questionSelect.className = 'form-input';
+          questionSelect.style.flex = '1';
+          questionSelect.innerHTML = '<option value="">Select question</option>';
+          currentDisease.questions.forEach(q => {
+            questionSelect.innerHTML += `<option value="${q.id}" ${q.id === condition.questionId ? 'selected' : ''}>${q.text}</option>`;
+          });
+          
+          const answerSelect = document.createElement('select');
+          answerSelect.className = 'form-input';
+          answerSelect.style.flex = '1';
+          answerSelect.name = 'blockingAnswer';
+          
+          questionSelect.addEventListener('change', function() {
+            const selectedQ = currentDisease.questions.find(q => q.id === this.value);
+            answerSelect.innerHTML = '<option value="">Select answer</option>';
+            if (selectedQ && selectedQ.options) {
+              selectedQ.options.forEach(opt => {
+                answerSelect.innerHTML += `<option value="${opt}" ${opt === condition.answer ? 'selected' : ''}>${opt}</option>`;
+              });
+            }
+          });
+          
+          // Trigger change to populate answers
+          questionSelect.dispatchEvent(new Event('change'));
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'btn-secondary';
+          removeBtn.textContent = 'Remove';
+          removeBtn.style.padding = '0.5rem 1rem';
+          removeBtn.onclick = () => conditionDiv.remove();
+          
+          conditionDiv.appendChild(questionSelect);
+          conditionDiv.appendChild(answerSelect);
+          conditionDiv.appendChild(removeBtn);
+          document.getElementById('blockingConditions').appendChild(conditionDiv);
+        });
       }
 
       showModal('addQuestionModal');

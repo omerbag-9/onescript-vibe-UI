@@ -13,25 +13,64 @@
     <h1 class="page-title">Select a Service</h1>
     <p class="page-subtitle">Choose the healthcare service you need. Only Erectile Dysfunction is available now.</p>
 
-    <div class="service-grid">
-      <div class="service-card selected">
-        <h3>Erectile Dysfunction</h3>
-        <p>Get professional assessment and treatment for erectile dysfunction from licensed healthcare providers.</p>
-      </div>
-      <div class="service-card" style="opacity: 0.5; cursor: not-allowed;">
-        <h3>Other Services</h3>
-        <p>Coming soon</p>
-      </div>
+    <div class="service-grid" id="servicesGrid">
+      <!-- Services will be loaded dynamically -->
     </div>
 
     <div style="text-align: center; margin-top: 2rem;">
-      <a href="assessment.html" class="btn-primary">Continue →</a>
+      <button class="btn-primary" id="continueBtn" onclick="continueToAssessment()" disabled>Continue →</button>
     </div>
   </div>
 
   <div id="footer"></div>
 
   <script src="../js/app.js"></script>
+  <script>
+    let selectedDiseaseId = null;
+
+    // Load available diseases/services
+    function loadServices() {
+      const diseases = JSON.parse(localStorage.getItem('diseases') || '[]');
+      const servicesGrid = document.getElementById('servicesGrid');
+      
+      if (diseases.length === 0) {
+        servicesGrid.innerHTML = '<div class="service-card"><h3>No services available</h3><p>Please contact support.</p></div>';
+        return;
+      }
+
+      diseases.forEach(disease => {
+        const serviceCard = document.createElement('div');
+        serviceCard.className = 'service-card';
+        serviceCard.onclick = function() {
+          selectService(disease.id, this);
+        };
+        serviceCard.innerHTML = `
+          <h3>${disease.name}</h3>
+          <p>${disease.description || 'Get professional assessment and treatment from licensed healthcare providers.'}</p>
+        `;
+        servicesGrid.appendChild(serviceCard);
+      });
+    }
+
+    // Select service
+    function selectService(diseaseId, cardElement) {
+      selectedDiseaseId = diseaseId;
+      const cards = document.querySelectorAll('.service-card');
+      cards.forEach(card => card.classList.remove('selected'));
+      cardElement.classList.add('selected');
+      document.getElementById('continueBtn').disabled = false;
+    }
+
+    // Continue to assessment
+    function continueToAssessment() {
+      if (!selectedDiseaseId) return;
+      sessionStorage.setItem('selectedDisease', selectedDiseaseId);
+      window.location.href = `assessment.html?disease=${selectedDiseaseId}`;
+    }
+
+    // Initialize
+    loadServices();
+  </script>
 </body>
 </html>
 
