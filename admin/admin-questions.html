@@ -150,14 +150,15 @@
     var editingQuestionId = null;
     
     // Define placeholder functions immediately to prevent errors
-    window.showAddDiseaseModal = function() { console.log('showAddDiseaseModal called but not yet defined'); };
-    window.showAddQuestionModal = function() { console.log('showAddQuestionModal called but not yet defined'); };
-    window.addDependency = function() { console.log('addDependency called but not yet defined'); };
-    window.addBlockingCondition = function() { console.log('addBlockingCondition called but not yet defined'); };
-    window.deleteDisease = function() { console.log('deleteDisease called but not yet defined'); };
-    window.deleteQuestion = function() { console.log('deleteQuestion called but not yet defined'); };
-    window.editQuestion = function() { console.log('editQuestion called but not yet defined'); };
-    window.selectDisease = function() { console.log('selectDisease called but not yet defined'); };
+    window.showAddDiseaseModal = function() { console.log('⚠️ showAddDiseaseModal called but not yet defined'); };
+    window.showAddQuestionModal = function() { console.log('⚠️ showAddQuestionModal called but not yet defined'); };
+    window.addDependency = function() { console.log('⚠️ addDependency called but not yet defined'); };
+    window.addBlockingCondition = function() { console.log('⚠️ addBlockingCondition called but not yet defined'); };
+    window.deleteDisease = function() { console.log('⚠️ deleteDisease called but not yet defined'); };
+    window.deleteQuestion = function() { console.log('⚠️ deleteQuestion called but not yet defined'); };
+    window.editQuestion = function() { console.log('⚠️ editQuestion called but not yet defined'); };
+    window.selectDisease = function() { console.log('⚠️ selectDisease called but not yet defined'); };
+    console.log('✅ Placeholder functions initialized');
 
     // Save diseases to localStorage
     function saveDiseases() {
@@ -222,8 +223,13 @@
 
     // Select disease to view/edit questions
     function selectDisease(diseaseId) {
+      console.log('🔵 selectDisease() called with ID:', diseaseId);
       currentDisease = diseases.find(d => d.id === diseaseId);
-      if (!currentDisease) return;
+      if (!currentDisease) {
+        console.log('❌ Disease not found:', diseaseId);
+        return;
+      }
+      console.log('✅ Disease selected:', currentDisease.name);
 
       const titleEl = document.getElementById('selectedDiseaseTitle');
       const nameEl = document.getElementById('selectedDiseaseName');
@@ -234,8 +240,10 @@
       if (sectionEl) sectionEl.style.display = 'block';
       
       loadQuestions();
+      console.log('✅ Questions loaded for disease');
     }
     window.selectDisease = selectDisease;
+    console.log('✅ selectDisease assigned to window');
 
     // Load questions for selected disease
     function loadQuestions() {
@@ -328,6 +336,7 @@
 
     // Show add disease modal
     function showAddDiseaseModal() {
+      console.log('🔵 showAddDiseaseModal() called');
       try {
         const form = document.getElementById('addDiseaseForm');
         if (form) {
@@ -335,25 +344,30 @@
         }
         const modal = document.getElementById('addDiseaseModal');
         if (modal) {
+          console.log('✅ Modal found, showing...');
           modal.classList.add('active');
           document.body.style.overflow = 'hidden';
         } else {
-          console.error('Modal addDiseaseModal not found');
+          console.error('❌ Modal addDiseaseModal not found');
           alert('Error: Modal not found. Please refresh the page.');
         }
       } catch (error) {
-        console.error('Error showing modal:', error);
+        console.error('❌ Error showing modal:', error);
         alert('Error opening modal: ' + error.message);
       }
     }
     window.showAddDiseaseModal = showAddDiseaseModal;
+    console.log('✅ showAddDiseaseModal assigned to window');
 
     // Show add question modal
     function showAddQuestionModal() {
+      console.log('🔵 showAddQuestionModal() called');
       if (!currentDisease) {
+        console.log('⚠️ No disease selected');
         alert('Please select a disease first');
         return;
       }
+      console.log('✅ Disease selected:', currentDisease.name);
       try {
         editingQuestionId = null;
         const titleEl = document.getElementById('questionModalTitle');
@@ -372,20 +386,26 @@
         if (orderInput) orderInput.value = (currentDisease.questions.length + 1).toString();
         
         if (typeof showModal === 'function') {
+          console.log('✅ Using showModal function');
           showModal('addQuestionModal');
         } else {
+          console.log('⚠️ showModal not available, using direct manipulation');
           const modal = document.getElementById('addQuestionModal');
           if (modal) {
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            console.log('✅ Modal shown directly');
+          } else {
+            console.error('❌ Modal addQuestionModal not found');
           }
         }
       } catch (error) {
-        console.error('Error showing question modal:', error);
+        console.error('❌ Error showing question modal:', error);
         alert('Error opening modal: ' + error.message);
       }
     }
     window.showAddQuestionModal = showAddQuestionModal;
+    console.log('✅ showAddQuestionModal assigned to window');
 
     // Toggle question options based on type
     function toggleQuestionOptions() {
@@ -404,10 +424,13 @@
 
     // Add dependency
     function addDependency() {
+      console.log('🔵 addDependency() called');
       if (!currentDisease || currentDisease.questions.length === 0) {
+        console.log('⚠️ No disease or questions available');
         alert('Please add questions first before setting dependencies');
         return;
       }
+      console.log('✅ Adding dependency, current questions:', currentDisease.questions.length);
 
       const dependenciesContainer = document.getElementById('dependenciesContainer');
       if (!dependenciesContainer) {
@@ -458,8 +481,10 @@
       dependencyDiv.appendChild(answerSelect);
       dependencyDiv.appendChild(removeBtn);
       dependenciesContainer.appendChild(dependencyDiv);
+      console.log('✅ Dependency added successfully');
     }
     window.addDependency = addDependency;
+    console.log('✅ addDependency assigned to window');
 
     // Load dependencies for editing
     function loadDependencies(question) {
@@ -519,10 +544,13 @@
 
     // Add blocking condition
     function addBlockingCondition() {
+      console.log('🔵 addBlockingCondition() called');
       if (!currentDisease || currentDisease.questions.length === 0) {
+        console.log('⚠️ No disease or questions available');
         alert('Please add questions first before setting blocking conditions');
         return;
       }
+      console.log('✅ Adding blocking condition');
 
       const blockingConditions = document.getElementById('blockingConditions');
       if (!blockingConditions) {
@@ -568,8 +596,10 @@
       conditionDiv.appendChild(answerSelect);
       conditionDiv.appendChild(removeBtn);
       blockingConditions.appendChild(conditionDiv);
+      console.log('✅ Blocking condition added successfully');
     }
     window.addBlockingCondition = addBlockingCondition;
+    console.log('✅ addBlockingCondition assigned to window');
 
     // Initialize event listeners function
     function initEventListeners() {
@@ -687,7 +717,12 @@
 
     // Delete disease
     function deleteDisease(diseaseId) {
-      if (!confirm('Are you sure you want to delete this disease and all its questions?')) return;
+      console.log('🔵 deleteDisease() called with ID:', diseaseId);
+      if (!confirm('Are you sure you want to delete this disease and all its questions?')) {
+        console.log('⚠️ Delete cancelled by user');
+        return;
+      }
+      console.log('✅ Deleting disease:', diseaseId);
 
       diseases = diseases.filter(d => d.id !== diseaseId);
       saveDiseases();
@@ -698,24 +733,38 @@
         if (sectionEl) sectionEl.style.display = 'none';
         currentDisease = null;
       }
+      console.log('✅ Disease deleted successfully');
     }
     window.deleteDisease = deleteDisease;
+    console.log('✅ deleteDisease assigned to window');
 
     // Delete question
     function deleteQuestion(questionId) {
-      if (!confirm('Are you sure you want to delete this question?')) return;
+      console.log('🔵 deleteQuestion() called with ID:', questionId);
+      if (!confirm('Are you sure you want to delete this question?')) {
+        console.log('⚠️ Delete cancelled by user');
+        return;
+      }
+      console.log('✅ Deleting question:', questionId);
 
       if (!currentDisease) return;
       currentDisease.questions = currentDisease.questions.filter(q => q.id !== questionId);
       saveDiseases();
       loadQuestions();
+      console.log('✅ Question deleted successfully');
     }
     window.deleteQuestion = deleteQuestion;
+    console.log('✅ deleteQuestion assigned to window');
 
     // Edit question
     function editQuestion(questionId) {
+      console.log('🔵 editQuestion() called with ID:', questionId);
       const question = currentDisease.questions.find(q => q.id === questionId);
-      if (!question) return;
+      if (!question) {
+        console.log('❌ Question not found:', questionId);
+        return;
+      }
+      console.log('✅ Editing question:', question.text);
 
       editingQuestionId = questionId;
       document.getElementById('questionModalTitle').textContent = 'Edit Question';
@@ -788,8 +837,10 @@
           document.body.style.overflow = 'hidden';
         }
       }
+      console.log('✅ Question edit modal shown');
     }
     window.editQuestion = editQuestion;
+    console.log('✅ editQuestion assigned to window');
 
     // Initialize - wait for DOM
     if (document.readyState === 'loading') {
