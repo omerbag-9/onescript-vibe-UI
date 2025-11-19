@@ -53,7 +53,7 @@
   <!-- Add Disease Modal -->
   <div class="modal-overlay" id="addDiseaseModal">
     <div class="modal">
-      <button class="modal-close" onclick="closeModal('addDiseaseModal')">×</button>
+      <button class="modal-close" onclick="closeModal('addDiseaseModal')" type="button">×</button>
       <h2 style="margin-bottom: 1.5rem;">Add New Disease/Condition</h2>
       
       <form id="addDiseaseForm">
@@ -313,8 +313,23 @@
 
     // Show add disease modal
     function showAddDiseaseModal() {
-      document.getElementById('addDiseaseForm').reset();
-      showModal('addDiseaseModal');
+      try {
+        const form = document.getElementById('addDiseaseForm');
+        if (form) {
+          form.reset();
+        }
+        const modal = document.getElementById('addDiseaseModal');
+        if (modal) {
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        } else {
+          console.error('Modal addDiseaseModal not found');
+          alert('Error: Modal not found. Please refresh the page.');
+        }
+      } catch (error) {
+        console.error('Error showing modal:', error);
+        alert('Error opening modal: ' + error.message);
+      }
     }
 
     // Show add question modal
@@ -323,15 +338,32 @@
         alert('Please select a disease first');
         return;
       }
-      editingQuestionId = null;
-      document.getElementById('questionModalTitle').textContent = 'Add New Question';
-      document.getElementById('questionEditModeIndicator').style.display = 'none';
-      document.getElementById('addQuestionForm').reset();
-      document.getElementById('optionsSection').style.display = 'none';
-      document.getElementById('dependenciesContainer').innerHTML = '';
-      document.getElementById('blockingConditions').innerHTML = '';
-      document.getElementById('questionOrder').value = (currentDisease.questions.length + 1).toString();
-      showModal('addQuestionModal');
+      try {
+        editingQuestionId = null;
+        const titleEl = document.getElementById('questionModalTitle');
+        if (titleEl) titleEl.textContent = 'Add New Question';
+        const indicatorEl = document.getElementById('questionEditModeIndicator');
+        if (indicatorEl) indicatorEl.style.display = 'none';
+        const form = document.getElementById('addQuestionForm');
+        if (form) form.reset();
+        const optionsSection = document.getElementById('optionsSection');
+        if (optionsSection) optionsSection.style.display = 'none';
+        const depsContainer = document.getElementById('dependenciesContainer');
+        if (depsContainer) depsContainer.innerHTML = '';
+        const blockingContainer = document.getElementById('blockingConditions');
+        if (blockingContainer) blockingContainer.innerHTML = '';
+        const orderInput = document.getElementById('questionOrder');
+        if (orderInput) orderInput.value = (currentDisease.questions.length + 1).toString();
+        
+        const modal = document.getElementById('addQuestionModal');
+        if (modal) {
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      } catch (error) {
+        console.error('Error showing question modal:', error);
+        alert('Error opening modal: ' + error.message);
+      }
     }
 
     // Toggle question options based on type
