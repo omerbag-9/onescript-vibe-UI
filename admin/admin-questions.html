@@ -144,25 +144,49 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Question Dependencies (Optional)</label>
-          <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem;">This question will only appear if the dependencies are met</p>
+          <label class="form-label">Question Dependencies - Advanced Combos (Optional)</label>
+          <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem;">Create groups of conditions with AND/OR logic</p>
           
-          <div style="margin-bottom: 1rem;">
-            <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Dependency Logic:</label>
-            <select class="form-input" id="dependencyLogic" style="max-width: 300px;">
-              <option value="AND">Match ALL dependencies (AND)</option>
-              <option value="OR">Match ANY dependency (OR)</option>
+          <div style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-light); border-radius: 4px;">
+            <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">How to use Combos:</label>
+            <select class="form-input" id="dependencyMode" style="max-width: 400px; margin-bottom: 0.5rem;" onchange="toggleDependencyMode()">
+              <option value="simple">Simple Mode (All AND or All OR)</option>
+              <option value="advanced">Advanced Mode (Groups with AND/OR)</option>
             </select>
-            <small style="color: var(--text-light); display: block; margin-top: 0.25rem;">
-              • AND: Question shows only when ALL dependencies are met<br>
-              • OR: Question shows when ANY dependency is met
+            <small style="color: var(--text-light); display: block;">
+              • <strong>Simple:</strong> All conditions use same logic (AND or OR)<br>
+              • <strong>Advanced:</strong> Create groups. Each group uses AND. Groups are combined with OR
             </small>
           </div>
-          
-          <div id="dependenciesContainer">
-            <!-- Dependencies will be added here -->
+
+          <!-- Simple Mode -->
+          <div id="simpleMode" style="display: block;">
+            <div style="margin-bottom: 1rem;">
+              <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Logic:</label>
+              <select class="form-input" id="dependencyLogic" style="max-width: 300px;">
+                <option value="AND">Match ALL dependencies (AND)</option>
+                <option value="OR">Match ANY dependency (OR)</option>
+              </select>
+            </div>
+            
+            <div id="dependenciesContainer">
+              <!-- Dependencies will be added here -->
+            </div>
+            <button type="button" class="btn-secondary" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="addDependency()">+ Add Dependency</button>
           </div>
-          <button type="button" class="btn-secondary" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="addDependency()">+ Add Dependency</button>
+
+          <!-- Advanced Mode (Groups) -->
+          <div id="advancedMode" style="display: none;">
+            <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 1rem; padding: 0.75rem; background: #E3F2FD; border-left: 3px solid var(--primary-teal); border-radius: 4px;">
+              <strong>How it works:</strong> Create multiple groups. Within each group, conditions are combined with AND. The groups themselves are combined with OR.<br>
+              <strong>Example:</strong> (Q1="Yes" AND Q2="No") OR (Q3="Yes")
+            </p>
+            
+            <div id="dependencyGroupsContainer">
+              <!-- Dependency groups will be added here -->
+            </div>
+            <button type="button" class="btn-primary" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="addDependencyGroup()">+ Add Group (OR)</button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -307,7 +331,24 @@
         }
 
         let dependencyText = '';
-        if (question.dependencies && question.dependencies.length > 0) {
+        
+        // Check for grouped dependencies first
+        if (question.dependencyGroups && question.dependencyGroups.length > 0) {
+          const groupTexts = question.dependencyGroups.map(group => {
+            const condTexts = group.map(cond => {
+              const depQuestion = currentDisease.questions.find(q => q.id === cond.questionId);
+              return depQuestion ? `"${depQuestion.text}" = "${cond.answer}"` : '';
+            }).filter(Boolean);
+            return `(${condTexts.join(' <strong>AND</strong> ')})`;
+          });
+          
+          if (groupTexts.length > 0) {
+            dependencyText = `<div style="margin-top: 0.5rem; color: var(--primary-teal); font-size: 0.85rem;">
+              ⚡ Depends on (Groups): ${groupTexts.join(' <strong style="color: var(--error);">OR</strong> ')}
+            </div>`;
+          }
+        } else if (question.dependencies && question.dependencies.length > 0) {
+          // Simple dependencies
           const depTexts = question.dependencies.map(dep => {
             const depQuestion = currentDisease.questions.find(q => q.id === dep.questionId);
             if (depQuestion) {
@@ -442,12 +483,19 @@
         if (validationSection) validationSection.style.display = 'none';
         const depsContainer = document.getElementById('dependenciesContainer');
         if (depsContainer) depsContainer.innerHTML = '';
+        const groupsContainer = document.getElementById('dependencyGroupsContainer');
+        if (groupsContainer) groupsContainer.innerHTML = '';
         const blockingContainer = document.getElementById('blockingConditions');
         if (blockingContainer) blockingContainer.innerHTML = '';
         const orderInput = document.getElementById('questionOrder');
         if (orderInput) orderInput.value = (currentDisease.questions.length + 1).toString();
         const dependencyLogic = document.getElementById('dependencyLogic');
         if (dependencyLogic) dependencyLogic.value = 'AND';
+        const dependencyMode = document.getElementById('dependencyMode');
+        if (dependencyMode) {
+          dependencyMode.value = 'simple';
+          toggleDependencyMode();
+        }
         const questionRequired = document.getElementById('questionRequired');
         if (questionRequired) questionRequired.checked = true;
         
@@ -500,6 +548,22 @@
         validationSection.style.display = 'none';
       }
     }
+
+    // Toggle dependency mode
+    function toggleDependencyMode() {
+      const mode = document.getElementById('dependencyMode').value;
+      const simpleMode = document.getElementById('simpleMode');
+      const advancedMode = document.getElementById('advancedMode');
+      
+      if (mode === 'advanced') {
+        simpleMode.style.display = 'none';
+        advancedMode.style.display = 'block';
+      } else {
+        simpleMode.style.display = 'block';
+        advancedMode.style.display = 'none';
+      }
+    }
+    window.toggleDependencyMode = toggleDependencyMode;
 
     // Add dependency - defined directly on window
     window.addDependency = function() {
@@ -563,6 +627,236 @@
       console.log('✅ Dependency added successfully');
     };
     console.log('✅ addDependency defined on window');
+
+    // Add dependency group - defined directly on window
+    window.addDependencyGroup = function() {
+      console.log('🔵 addDependencyGroup() called');
+      if (!currentDisease || currentDisease.questions.length === 0) {
+        console.log('⚠️ No disease or questions available');
+        alert('Please add questions first before setting dependency groups');
+        return;
+      }
+
+      const groupsContainer = document.getElementById('dependencyGroupsContainer');
+      if (!groupsContainer) {
+        console.error('dependencyGroupsContainer not found');
+        return;
+      }
+
+      const groupId = 'group-' + Date.now();
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'dependency-group';
+      groupDiv.id = groupId;
+      groupDiv.style.cssText = 'margin-bottom: 1rem; padding: 1rem; border: 2px solid var(--primary-teal); border-radius: 8px; background: white;';
+
+      const groupHeader = document.createElement('div');
+      groupHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-light);';
+      groupHeader.innerHTML = `
+        <strong style="color: var(--primary-teal);">Group (conditions within group use AND)</strong>
+        <button type="button" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; color: var(--error); border-color: var(--error);" onclick="document.getElementById('${groupId}').remove()">Remove Group</button>
+      `;
+
+      const conditionsContainer = document.createElement('div');
+      conditionsContainer.className = 'group-conditions-container';
+      conditionsContainer.dataset.groupId = groupId;
+
+      const addConditionBtn = document.createElement('button');
+      addConditionBtn.type = 'button';
+      addConditionBtn.className = 'btn-secondary';
+      addConditionBtn.textContent = '+ Add Condition to Group';
+      addConditionBtn.style.cssText = 'margin-top: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.85rem;';
+      addConditionBtn.onclick = () => addConditionToGroup(groupId);
+
+      groupDiv.appendChild(groupHeader);
+      groupDiv.appendChild(conditionsContainer);
+      groupDiv.appendChild(addConditionBtn);
+      groupsContainer.appendChild(groupDiv);
+
+      // Add first condition automatically
+      addConditionToGroup(groupId);
+      
+      console.log('✅ Dependency group added successfully');
+    };
+    console.log('✅ addDependencyGroup defined on window');
+
+    // Add condition to a specific group
+    function addConditionToGroup(groupId) {
+      console.log('🔵 addConditionToGroup() called for group:', groupId);
+      
+      const conditionsContainer = document.querySelector(`[data-group-id="${groupId}"]`);
+      if (!conditionsContainer) {
+        console.error('Conditions container not found for group:', groupId);
+        return;
+      }
+
+      const conditionDiv = document.createElement('div');
+      conditionDiv.style.cssText = 'display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-light); border-radius: 4px;';
+
+      const questionSelect = document.createElement('select');
+      questionSelect.className = 'form-input';
+      questionSelect.style.flex = '1';
+      questionSelect.innerHTML = '<option value="">Select question</option>';
+      currentDisease.questions.forEach(q => {
+        if (q.id !== editingQuestionId) {
+          questionSelect.innerHTML += `<option value="${q.id}">${q.text}</option>`;
+        }
+      });
+
+      const answerSelect = document.createElement('select');
+      answerSelect.className = 'form-input';
+      answerSelect.style.flex = '1';
+      answerSelect.innerHTML = '<option value="">Select answer</option>';
+      answerSelect.name = 'groupConditionAnswer';
+
+      questionSelect.addEventListener('change', function() {
+        const selectedQ = currentDisease.questions.find(q => q.id === this.value);
+        answerSelect.innerHTML = '<option value="">Select answer</option>';
+        if (selectedQ && selectedQ.options) {
+          selectedQ.options.forEach(opt => {
+            answerSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
+          });
+        } else if (selectedQ && (selectedQ.type === 'text' || selectedQ.type === 'textarea')) {
+          answerSelect.innerHTML = '<option value="*">Any answer</option>';
+        }
+      });
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn-secondary';
+      removeBtn.textContent = 'Remove';
+      removeBtn.style.padding = '0.4rem 0.8rem';
+      removeBtn.style.fontSize = '0.85rem';
+      removeBtn.onclick = () => conditionDiv.remove();
+
+      const andLabel = document.createElement('span');
+      andLabel.style.cssText = 'font-size: 0.85rem; color: var(--primary-teal); font-weight: 600; min-width: 40px; text-align: center;';
+      andLabel.textContent = 'AND';
+
+      conditionDiv.appendChild(questionSelect);
+      conditionDiv.appendChild(answerSelect);
+      conditionDiv.appendChild(removeBtn);
+
+      // Add AND label if not the first condition
+      if (conditionsContainer.children.length > 0) {
+        const separator = document.createElement('div');
+        separator.style.cssText = 'text-align: center; margin: 0.5rem 0; color: var(--primary-teal); font-weight: 600;';
+        separator.textContent = '↓ AND ↓';
+        conditionsContainer.appendChild(separator);
+      }
+
+      conditionsContainer.appendChild(conditionDiv);
+      console.log('✅ Condition added to group');
+    }
+    window.addConditionToGroup = addConditionToGroup;
+
+    // Load dependency groups for editing
+    function loadDependencyGroups(question) {
+      const groupsContainer = document.getElementById('dependencyGroupsContainer');
+      groupsContainer.innerHTML = '';
+      
+      if (!question.dependencyGroups || question.dependencyGroups.length === 0) return;
+      
+      question.dependencyGroups.forEach((group, groupIndex) => {
+        const groupId = 'group-' + Date.now() + '-' + groupIndex;
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'dependency-group';
+        groupDiv.id = groupId;
+        groupDiv.style.cssText = 'margin-bottom: 1rem; padding: 1rem; border: 2px solid var(--primary-teal); border-radius: 8px; background: white;';
+
+        const groupHeader = document.createElement('div');
+        groupHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-light);';
+        groupHeader.innerHTML = `
+          <strong style="color: var(--primary-teal);">Group ${groupIndex + 1} (conditions use AND)</strong>
+          <button type="button" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; color: var(--error); border-color: var(--error);" onclick="document.getElementById('${groupId}').remove()">Remove Group</button>
+        `;
+
+        const conditionsContainer = document.createElement('div');
+        conditionsContainer.className = 'group-conditions-container';
+        conditionsContainer.dataset.groupId = groupId;
+
+        // Load existing conditions
+        group.forEach((condition, condIndex) => {
+          const conditionDiv = document.createElement('div');
+          conditionDiv.style.cssText = 'display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-light); border-radius: 4px;';
+
+          const questionSelect = document.createElement('select');
+          questionSelect.className = 'form-input';
+          questionSelect.style.flex = '1';
+          questionSelect.innerHTML = '<option value="">Select question</option>';
+          currentDisease.questions.forEach(q => {
+            questionSelect.innerHTML += `<option value="${q.id}" ${q.id === condition.questionId ? 'selected' : ''}>${q.text}</option>`;
+          });
+
+          const answerSelect = document.createElement('select');
+          answerSelect.className = 'form-input';
+          answerSelect.style.flex = '1';
+          answerSelect.name = 'groupConditionAnswer';
+          answerSelect.innerHTML = `<option value="*" ${condition.answer === '*' ? 'selected' : ''}>Any answer</option>`;
+
+          // Populate answers for selected question
+          const selectedQ = currentDisease.questions.find(q => q.id === condition.questionId);
+          if (selectedQ && selectedQ.options) {
+            selectedQ.options.forEach(opt => {
+              answerSelect.innerHTML += `<option value="${opt}" ${opt === condition.answer ? 'selected' : ''}>${opt}</option>`;
+            });
+          }
+
+          questionSelect.addEventListener('change', function() {
+            const q = currentDisease.questions.find(q => q.id === this.value);
+            answerSelect.innerHTML = '<option value="">Select answer</option>';
+            if (q && q.options) {
+              q.options.forEach(opt => {
+                answerSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
+              });
+            } else if (q && (q.type === 'text' || q.type === 'textarea')) {
+              answerSelect.innerHTML = '<option value="*">Any answer</option>';
+            }
+          });
+
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'btn-secondary';
+          removeBtn.textContent = 'Remove';
+          removeBtn.style.padding = '0.4rem 0.8rem';
+          removeBtn.style.fontSize = '0.85rem';
+          removeBtn.onclick = () => conditionDiv.remove();
+
+          conditionDiv.appendChild(questionSelect);
+          conditionDiv.appendChild(answerSelect);
+          conditionDiv.appendChild(removeBtn);
+
+          // Add AND label if not the first condition
+          if (condIndex > 0) {
+            const separator = document.createElement('div');
+            separator.style.cssText = 'text-align: center; margin: 0.5rem 0; color: var(--primary-teal); font-weight: 600;';
+            separator.textContent = '↓ AND ↓';
+            conditionsContainer.appendChild(separator);
+          }
+
+          conditionsContainer.appendChild(conditionDiv);
+        });
+
+        const addConditionBtn = document.createElement('button');
+        addConditionBtn.type = 'button';
+        addConditionBtn.className = 'btn-secondary';
+        addConditionBtn.textContent = '+ Add Condition to Group';
+        addConditionBtn.style.cssText = 'margin-top: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.85rem;';
+        addConditionBtn.onclick = () => addConditionToGroup(groupId);
+
+        groupDiv.appendChild(groupHeader);
+        groupDiv.appendChild(conditionsContainer);
+        groupDiv.appendChild(addConditionBtn);
+        groupsContainer.appendChild(groupDiv);
+        
+        // Add OR separator between groups
+        if (groupIndex < question.dependencyGroups.length - 1) {
+          const orSeparator = document.createElement('div');
+          orSeparator.style.cssText = 'text-align: center; margin: 1rem 0; color: var(--error); font-weight: 700; font-size: 1.1rem;';
+          orSeparator.textContent = '═══ OR ═══';
+          groupsContainer.appendChild(orSeparator);
+        }
+      });
+    }
 
     // Load dependencies for editing
     function loadDependencies(question) {
@@ -783,6 +1077,7 @@
             order: order,
             dependencies: dependencies.length > 0 ? dependencies : null,
             dependencyLogic: dependencies.length > 1 ? dependencyLogic : 'AND',
+            dependencyGroups: dependencyGroups, // NEW: grouped dependencies
             blockingConditions: blockingConditions
           };
 
@@ -868,6 +1163,11 @@
       document.getElementById('questionOrder').value = question.order || 999;
       document.getElementById('dependencyLogic').value = question.dependencyLogic || 'AND';
       
+      // Set dependency mode
+      const hasGroups = question.dependencyGroups && question.dependencyGroups.length > 0;
+      document.getElementById('dependencyMode').value = hasGroups ? 'advanced' : 'simple';
+      toggleDependencyMode();
+      
       toggleQuestionOptions();
       
       if (question.options && question.options.length > 0) {
@@ -880,8 +1180,18 @@
         document.getElementById('validationMax').value = question.validation.max || '';
       }
 
-      // Load dependencies
-      loadDependencies(question);
+      // Load dependencies (simple mode) or groups (advanced mode)
+      if (hasGroups) {
+        loadDependencyGroups(question);
+      } else {
+        loadDependencies(question);
+      }
+      
+      // Clear group container if in simple mode
+      if (!hasGroups) {
+        const groupsContainer = document.getElementById('dependencyGroupsContainer');
+        if (groupsContainer) groupsContainer.innerHTML = '';
+      }
 
       // Load blocking conditions
       document.getElementById('blockingConditions').innerHTML = '';

@@ -259,37 +259,67 @@
 
     // Check if all dependencies are met for a question
     function checkDependencies(question) {
-      // If no dependencies, always show
+      // Check for grouped dependencies first (advanced mode)
+      if (question.dependencyGroups && question.dependencyGroups.length > 0) {
+        // At least ONE group must be satisfied (OR between groups)
+        return question.dependencyGroups.some(group => {
+          // ALL conditions in the group must be satisfied (AND within group)
+          return group.every(condition => {
+            const dependencyQuestion = allQuestions.find(q => q.id === condition.questionId);
+            if (!dependencyQuestion) return false;
+
+            const dependencyAnswer = answers[condition.questionId];
+            if (!dependencyAnswer) return false;
+
+            // Handle "any answer" wildcard
+            if (condition.answer === '*') {
+              return dependencyAnswer && dependencyAnswer.length > 0;
+            }
+
+            // Check if answer matches
+            if (Array.isArray(dependencyAnswer)) {
+              return dependencyAnswer.includes(condition.answer);
+            } else {
+              return dependencyAnswer === condition.answer;
+            }
+          });
+        });
+      }
+      
+      // Simple dependencies (backward compatibility)
       if (!question.dependencies || question.dependencies.length === 0) {
         return true;
       }
 
-      // Check ALL dependencies (AND logic)
-      return question.dependencies.every(dep => {
+      // Get logic type (AND or OR)
+      const logic = question.dependencyLogic || 'AND';
+      
+      // Check each dependency
+      const dependencyChecks = question.dependencies.map(dep => {
         const dependencyQuestion = allQuestions.find(q => q.id === dep.questionId);
-        if (!dependencyQuestion) {
-          return false; // Dependency question doesn't exist
-        }
+        if (!dependencyQuestion) return false;
 
         const dependencyAnswer = answers[dep.questionId];
-        if (!dependencyAnswer) {
-          return false; // Dependency not answered
-        }
+        if (!dependencyAnswer) return false;
 
         // Check if answer matches requirement
         if (dep.answer === '*') {
-          // Any answer is acceptable for text/textarea
           return true;
         }
 
         if (Array.isArray(dependencyAnswer)) {
-          // For multiple-select, check if any selected answer matches
           return dependencyAnswer.includes(dep.answer);
         } else {
-          // For single answer, check if it matches exactly
           return dependencyAnswer === dep.answer;
         }
       });
+
+      // Apply logic
+      if (logic === 'OR') {
+        return dependencyChecks.some(check => check === true);
+      } else {
+        return dependencyChecks.every(check => check === true);
+      }
     }
 
     // Check if dependency questions are visible
