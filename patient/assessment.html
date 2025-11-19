@@ -249,6 +249,62 @@
       });
     }
 
+    // Check if all dependencies are met for a question
+    function checkDependencies(question) {
+      // If no dependencies, always show
+      if (!question.dependencies || question.dependencies.length === 0) {
+        return true;
+      }
+
+      // Check ALL dependencies (AND logic)
+      return question.dependencies.every(dep => {
+        const dependencyQuestion = allQuestions.find(q => q.id === dep.questionId);
+        if (!dependencyQuestion) {
+          return false; // Dependency question doesn't exist
+        }
+
+        const dependencyAnswer = answers[dep.questionId];
+        if (!dependencyAnswer) {
+          return false; // Dependency not answered
+        }
+
+        // Check if answer matches requirement
+        if (dep.answer === '*') {
+          // Any answer is acceptable for text/textarea
+          return true;
+        }
+
+        if (Array.isArray(dependencyAnswer)) {
+          // For multiple-select, check if any selected answer matches
+          return dependencyAnswer.includes(dep.answer);
+        } else {
+          // For single answer, check if it matches exactly
+          return dependencyAnswer === dep.answer;
+        }
+      });
+    }
+
+    // Check if dependency questions are visible
+    function areDependencyQuestionsVisible(question) {
+      if (!question.dependencies || question.dependencies.length === 0) {
+        return true;
+      }
+
+      // Check if all dependency questions are visible (recursively)
+      return question.dependencies.every(dep => {
+        const depQuestion = allQuestions.find(q => q.id === dep.questionId);
+        if (!depQuestion) return false;
+        
+        // If dependency has no dependencies, it's visible
+        if (!depQuestion.dependencies || depQuestion.dependencies.length === 0) {
+          return true;
+        }
+        
+        // Recursively check if dependency's dependencies are visible
+        return areDependencyQuestionsVisible(depQuestion);
+      });
+    }
+
     // Get visible questions based on dependencies
     function getVisibleQuestions() {
       const visible = [];
@@ -256,55 +312,31 @@
       
       // First pass: add questions with no dependencies
       allQuestions.forEach(question => {
-        if (!question.dependsOn) {
+        if (!question.dependencies || question.dependencies.length === 0) {
           visible.push(question);
           processed.add(question.id);
         }
       });
       
-      // Second pass: add dependent questions if conditions are met
+      // Iterate until no more questions can be added
       let changed = true;
-      while (changed) {
+      let maxIterations = 100; // Safety limit
+      let iterations = 0;
+      
+      while (changed && iterations < maxIterations) {
         changed = false;
+        iterations++;
+        
         allQuestions.forEach(question => {
           if (processed.has(question.id)) return;
           
-          if (!question.dependsOn) {
-            if (!visible.find(q => q.id === question.id)) {
-              visible.push(question);
-              processed.add(question.id);
-              changed = true;
-            }
-            return;
+          // Check if all dependency questions are visible
+          if (!areDependencyQuestionsVisible(question)) {
+            return; // Dependencies not visible yet
           }
 
-          // Check if dependency question is answered and visible
-          const dependencyQuestion = visible.find(q => q.id === question.dependsOn);
-          if (!dependencyQuestion) {
-            return; // Dependency not visible yet
-          }
-
-          const dependencyAnswer = answers[question.dependsOn];
-          if (!dependencyAnswer) {
-            return; // Don't show if dependency not answered
-          }
-
-          // Check if answer matches conditional requirements
-          let shouldShow = false;
-          if (question.conditionalAnswers && question.conditionalAnswers.length > 0) {
-            // For multiple-select, check if any selected answer matches
-            if (Array.isArray(dependencyAnswer)) {
-              shouldShow = dependencyAnswer.some(ans => question.conditionalAnswers.includes(ans));
-            } else {
-              // For single answer, check if it matches
-              shouldShow = question.conditionalAnswers.includes(dependencyAnswer);
-            }
-          } else {
-            // If no conditional answers specified, show if dependency is answered
-            shouldShow = true;
-          }
-
-          if (shouldShow && !visible.find(q => q.id === question.id)) {
+          // Check if all dependencies are met
+          if (checkDependencies(question)) {
             visible.push(question);
             processed.add(question.id);
             changed = true;
